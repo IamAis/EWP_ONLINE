@@ -367,7 +367,7 @@ export class PDFGenerator {
         }
         this.doc.setLineWidth(0.3);
         this.doc.line(this.margin + 10, yPosition, this.pageWidth - this.margin - 10, yPosition);
-        yPosition += 3;
+        yPosition += 8;
       }
 
       yPosition += 5; // Space after each week
