@@ -326,21 +326,21 @@ export default function WorkoutDetail() {
                         <>
                           {/* Desktop Table View */}
                           <div className="hidden md:block overflow-x-auto">
-                            <table className="w-full text-sm">
+                            <table className="w-full text-sm table-fixed">
                               <thead>
                                 <tr className="border-b border-gray-200 dark:border-gray-600">
-                                  <th className="text-left py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Esercizio</th>
-                                  <th className="text-left py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Serie</th>
-                                  <th className="text-left py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Reps</th>
-                                  <th className="text-left py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Carico</th>
-                                  <th className="text-left py-2 px-2 font-medium text-gray-700 dark:text-gray-300">Recupero</th>
+                                  <th className="text-left py-2 px-2 font-medium text-gray-700 dark:text-gray-300 w-1/2">Esercizio</th>
+                                  <th className="text-left py-2 px-2 font-medium text-gray-700 dark:text-gray-300 w-16">Serie</th>
+                                  <th className="text-left py-2 px-2 font-medium text-gray-700 dark:text-gray-300 w-20">Reps</th>
+                                  <th className="text-left py-2 px-2 font-medium text-gray-700 dark:text-gray-300 w-24">Carico</th>
+                                  <th className="text-left py-2 px-2 font-medium text-gray-700 dark:text-gray-300 w-28">Recupero</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {(day.exercises || []).map((exercise) => (
                                   <tr key={exercise.id} className="border-b border-gray-100 dark:border-gray-700">
-                                    <td className="py-2 px-2">
-                                      <div className="flex items-center space-x-2">
+                                    <td className="py-2 px-2 align-top">
+                                      <div className="flex items-start space-x-2 min-w-0">
                                         {exercise.imageUrl && (
                                           <img 
                                             src={exercise.imageUrl} 
@@ -348,13 +348,13 @@ export default function WorkoutDetail() {
                                             className="w-8 h-8 object-cover rounded"
                                           />
                                         )}
-                                        <span className="text-gray-900 dark:text-white">{exercise.name}</span>
+                                        <span className="text-gray-900 dark:text-white break-words whitespace-normal block min-w-0">{exercise.name}</span>
                                       </div>
                                     </td>
-                                    <td className="py-2 px-2 text-gray-700 dark:text-gray-300">{exercise.sets}</td>
-                                    <td className="py-2 px-2 text-gray-700 dark:text-gray-300">{exercise.reps}</td>
-                                    <td className="py-2 px-2 text-gray-700 dark:text-gray-300">{exercise.load || '-'}</td>
-                                    <td className="py-2 px-2 text-gray-700 dark:text-gray-300">{exercise.rest || '-'}</td>
+                                    <td className="py-2 px-2 text-gray-700 dark:text-gray-300 break-words whitespace-normal align-top">{exercise.sets}</td>
+                                    <td className="py-2 px-2 text-gray-700 dark:text-gray-300 break-words whitespace-normal align-top">{exercise.reps}</td>
+                                    <td className="py-2 px-2 text-gray-700 dark:text-gray-300 break-words whitespace-normal align-top">{exercise.load || '-'}</td>
+                                    <td className="py-2 px-2 text-gray-700 dark:text-gray-300 break-words whitespace-normal align-top">{exercise.rest || '-'}</td>
                                   </tr>
                                 ))}
                               </tbody>

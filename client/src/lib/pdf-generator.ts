@@ -93,14 +93,30 @@ export class PDFGenerator {
       ? workout.name.toUpperCase() 
       : 'SCHEDA DI ALLENAMENTO';
     
+    // Ridimensiona dinamicamente il titolo se eccede la larghezza utile
+    const maxTitleWidth = this.pageWidth - 2 * this.margin;
+    let titleFontSize = 24;
+    this.doc.setFontSize(titleFontSize);
+    while (this.doc.getTextWidth(title) > maxTitleWidth && titleFontSize > 12) {
+      titleFontSize -= 1;
+      this.doc.setFontSize(titleFontSize);
+    }
     this.doc.text(title, this.pageWidth / 2, yPosition + 10, { align: 'center' });
-    yPosition += 25;
+    yPosition += 15 + Math.max(0, (24 - titleFontSize));
 
     // Subtitle
     this.doc.setFontSize(14);
     this.doc.setTextColor(0, 0, 0);
-    this.doc.text(`${workout.workoutType} - ${workout.duration} settimane`, this.pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 15;
+    const subtitle = `${workout.workoutType} - ${workout.duration} settimane`;
+    const subtitleMaxWidth = this.pageWidth - 2 * this.margin;
+    if (this.doc.getTextWidth(subtitle) > subtitleMaxWidth) {
+      const lines = this.doc.splitTextToSize(subtitle, subtitleMaxWidth);
+      this.doc.text(lines, this.pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += lines.length * 6 + 3;
+    } else {
+      this.doc.text(subtitle, this.pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 15;
+    }
 
     // Coach name if present
     if (coachProfile?.name) {
@@ -146,18 +162,26 @@ export class PDFGenerator {
     this.doc.text('CLIENTE:', midPoint, yPosition);
     
     this.doc.setFont('helvetica', 'normal');
-    this.doc.text(workout.level || '', this.margin + 25, yPosition);
-    this.doc.text(workout.clientName, midPoint + 30, yPosition);
-    yPosition += 10;
+    const leftValX = this.margin + 25;
+    const rightValX = midPoint + 30;
+    const leftMaxW = midPoint - leftValX - 5;
+    const rightMaxW = (this.pageWidth - this.margin) - rightValX - 5;
+    const levelLines = this.doc.splitTextToSize(workout.level || '', Math.max(0, leftMaxW));
+    const clientLines = this.doc.splitTextToSize(workout.clientName || '', Math.max(0, rightMaxW));
+    this.doc.text(levelLines, leftValX, yPosition);
+    this.doc.text(clientLines, rightValX, yPosition);
+    yPosition += Math.max(levelLines.length, clientLines.length) * 5 + 2;
 
     this.doc.setFont('helvetica', 'bold');
     this.doc.text('TIPO:', this.margin, yPosition);
     this.doc.text('DURATA:', midPoint, yPosition);
     
     this.doc.setFont('helvetica', 'normal');
-    this.doc.text(workout.workoutType, this.margin + 25, yPosition);
-    this.doc.text(`${workout.duration} settimane`, midPoint + 30, yPosition);
-    yPosition += 10;
+    const typeLines = this.doc.splitTextToSize(workout.workoutType || '', Math.max(0, leftMaxW));
+    const durationLines = this.doc.splitTextToSize(`${workout.duration} settimane`, Math.max(0, rightMaxW));
+    this.doc.text(typeLines, leftValX, yPosition);
+    this.doc.text(durationLines, rightValX, yPosition);
+    yPosition += Math.max(typeLines.length, durationLines.length) * 5 + 2;
 
     return yPosition;
   }
@@ -200,9 +224,10 @@ export class PDFGenerator {
       this.doc.setFont('helvetica', 'bold');
       this.doc.setFontSize(12);
       this.doc.setTextColor(0, 0, 0);
-      const weekName = week.name || `SETTIMANA ${week.number}`;
-      this.doc.text(weekName.toUpperCase(), this.margin, yPosition);
-      yPosition += 8;
+      const weekName = (week.name || `SETTIMANA ${week.number}`).toUpperCase();
+      const weekLines = this.doc.splitTextToSize(weekName, this.pageWidth - 2 * this.margin);
+      this.doc.text(weekLines, this.margin, yPosition);
+      yPosition += weekLines.length * 6;
 
       // Week notes
       if (week.notes) {
@@ -225,8 +250,9 @@ export class PDFGenerator {
         this.doc.setFontSize(11);
         const dayTitleRgb = this.hexToRgb(textColor || '#4F46E5');
         this.doc.setTextColor(dayTitleRgb.r, dayTitleRgb.g, dayTitleRgb.b);
-        this.doc.text(day.name, this.margin + 5, yPosition);
-        yPosition += 8;
+        const dayLines = this.doc.splitTextToSize(day.name || '', this.pageWidth - 2 * this.margin - 10);
+        this.doc.text(dayLines, this.margin + 5, yPosition);
+        yPosition += dayLines.length * 6;
 
         // Day notes
         if (day.notes) {
@@ -278,13 +304,42 @@ export class PDFGenerator {
               }
             }
 
-            // Exercise data
-            this.doc.text(exercise.name || '', this.margin + (exercise.imageUrl ? 18 : 10), yPosition);
-            this.doc.text(exercise.sets || '', this.margin + 70, yPosition);
-            this.doc.text(exercise.reps || '', this.margin + 95, yPosition);
-            this.doc.text(exercise.load || '', this.margin + 120, yPosition);
-            this.doc.text(exercise.rest || '', this.margin + 150, yPosition);
-            yPosition += 5;
+            // Exercise data con wrapping e altezza riga dinamica
+            const nameX = this.margin + (exercise.imageUrl ? 18 : 10);
+            const setsX = this.margin + 70;
+            const repsX = this.margin + 95;
+            const loadX = this.margin + 120;
+            const restX = this.margin + 150;
+            const rowRightX = this.pageWidth - this.margin - 10;
+
+            const nameMax = Math.max(0, setsX - nameX - 2);
+            const setsMax = Math.max(0, repsX - setsX - 2);
+            const repsMax = Math.max(0, loadX - repsX - 2);
+            const loadMax = Math.max(0, restX - loadX - 2);
+            const restMax = Math.max(0, rowRightX - restX);
+
+            const nameLines = this.doc.splitTextToSize(exercise.name || '', nameMax);
+            const setsLines = this.doc.splitTextToSize(exercise.sets || '', setsMax);
+            const repsLines = this.doc.splitTextToSize(exercise.reps || '', repsMax);
+            const loadLines = this.doc.splitTextToSize(exercise.load || '', loadMax);
+            const restLines = this.doc.splitTextToSize(exercise.rest || '', restMax);
+
+            const lineHeight = 3.2; // per font size 8
+            const rowLines = Math.max(nameLines.length, setsLines.length, repsLines.length, loadLines.length, restLines.length);
+            const rowHeight = rowLines * lineHeight;
+
+            // Nuova pagina se la riga non ci sta
+            if (yPosition + rowHeight > this.pageHeight - 30) {
+              this.doc.addPage();
+              yPosition = this.margin;
+            }
+
+            this.doc.text(nameLines, nameX, yPosition);
+            this.doc.text(setsLines, setsX, yPosition);
+            this.doc.text(repsLines, repsX, yPosition);
+            this.doc.text(loadLines, loadX, yPosition);
+            this.doc.text(restLines, restX, yPosition);
+            yPosition += rowHeight + 2;
 
             // Exercise notes
             if (exercise.notes) {
@@ -299,7 +354,20 @@ export class PDFGenerator {
           }
         }
         
-        yPosition += 8; // Space after each day
+        // Line at the bottom of the day block (uguale a quella sotto le intestazioni)
+        if (yPosition > this.pageHeight - this.margin) {
+          this.doc.addPage();
+          yPosition = this.margin;
+        }
+        if (lineColor) {
+          const rgb2 = this.hexToRgb(lineColor);
+          this.doc.setDrawColor(rgb2.r, rgb2.g, rgb2.b);
+        } else {
+          this.doc.setDrawColor(200, 200, 200);
+        }
+        this.doc.setLineWidth(0.3);
+        this.doc.line(this.margin + 10, yPosition, this.pageWidth - this.margin - 10, yPosition);
+        yPosition += 3;
       }
 
       yPosition += 5; // Space after each week
@@ -379,7 +447,27 @@ export class PDFGenerator {
     this.doc.text(new Date().toLocaleDateString('it-IT'), this.pageWidth - this.margin, footerY + 10, { align: 'right' });
   }
 
-
+  // Tronca il testo aggiungendo un'ellissi se supera la larghezza massima
+  private fitText(text: string, maxWidth: number): string {
+    if (!text) return '';
+    if (this.doc.getTextWidth(text) <= maxWidth) return text;
+    const ellipsis = '…';
+    let start = 0;
+    let end = text.length;
+    let best = '';
+    // Binary search per trovare la lunghezza massima che entra
+    while (start <= end) {
+      const mid = Math.floor((start + end) / 2);
+      const candidate = text.slice(0, mid) + ellipsis;
+      if (this.doc.getTextWidth(candidate) <= maxWidth) {
+        best = candidate;
+        start = mid + 1;
+      } else {
+        end = mid - 1;
+      }
+    }
+    return best || ellipsis;
+  }
 
   private hexToRgb(hex: string): { r: number; g: number; b: number } {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
