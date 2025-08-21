@@ -1,11 +1,14 @@
 import { useTheme } from '@/hooks/use-theme';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, CloudUpload, Dumbbell, Home, Users, Settings } from 'lucide-react';
+import { Moon, Sun, CloudUpload, Dumbbell, Home, Users, Settings, LogOut, User as UserIcon } from 'lucide-react';
 import { BackupManager } from '@/lib/backup';
 import { useToast } from '@/hooks/use-toast';
 import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
 import Logo from '@/img/logo.png';
+import { LoginDialog } from './login-dialog';
+import { useAuth } from '@/hooks/use-auth';
+import { AccountDialog } from './account-dialog';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home' },
@@ -18,6 +21,7 @@ export function Navigation() {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
   const [location] = useLocation();
+  const { user, signOut } = useAuth();
 
   const handleBackup = async () => {
     try {
@@ -68,6 +72,34 @@ export function Navigation() {
                 </Link>
               );
             })}
+            {/* Autenticazione */}
+            {user ? (
+              <div className="flex items-center gap-3 ml-4">
+                <AccountDialog
+                  trigger={
+                    <Button variant="outline">
+                      <UserIcon size={16} />
+                      Profilo
+                    </Button>
+                  }
+                />
+                <Button variant="outline" onClick={signOut}>
+                  <LogOut size={16} />
+                  Esci
+                </Button>
+              </div>
+            ) : (
+              <LoginDialog
+                trigger={
+                  <Button
+                    variant="outline"
+                    className="ml-4"
+                  >
+                    Login
+                  </Button>
+                }
+              />
+            )}
           </nav>
           
           <div className="flex items-center space-x-5">

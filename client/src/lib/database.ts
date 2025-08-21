@@ -106,8 +106,10 @@ export const dbOps = {
   },
 
   async deleteWorkout(id: string): Promise<boolean> {
-    const deleted = await db.workouts.delete(id);
-    return deleted === 1;
+    const existing = await db.workouts.get(id);
+    if (!existing) return false;
+    await db.workouts.delete(id);
+    return true;
   },
 
   async getWorkoutsByClient(clientName: string): Promise<Workout[]> {
@@ -143,8 +145,10 @@ export const dbOps = {
   },
 
   async deleteClient(id: string): Promise<boolean> {
-    const deleted = await db.clients.delete(id);
-    return deleted === 1;
+    const existing = await db.clients.get(id);
+    if (!existing) return false;
+    await db.clients.delete(id);
+    return true;
   },
 
   async getClientByName(name: string): Promise<Client | undefined> {
@@ -240,6 +244,8 @@ export const dbOps = {
       db.clients.clear(),
       db.coachProfile.clear()
     ]);
+    // Rimuovi anche il backup del profilo in localStorage per evitare la re-importazione automatica
+    try { localStorage.removeItem('coach-profile'); } catch {}
   },
 
   async exportData(): Promise<{ workouts: Workout[], clients: Client[], coachProfile: CoachProfile | null }> {

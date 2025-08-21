@@ -92,6 +92,9 @@ export default function Settings() {
         });
       }
       
+      // Effettua anche il backup sul cloud (se autenticato)
+      try { await BackupManager.exportToSupabaseStorage(); } catch {}
+
       // Ricarica la pagina automaticamente dopo il salvataggio
       window.location.reload();
     } catch (error) {
@@ -143,9 +146,12 @@ export default function Settings() {
     }
   };
 
+
   const handleImport = async (file: File) => {
     try {
       await BackupManager.importFromJSON(file);
+      // Aggiorna anche il cloud automaticamente (se autenticato)
+      try { await BackupManager.exportToSupabaseStorage(); } catch {}
       
       // Update backup stats
       const stats = await BackupManager.getBackupStats();
@@ -171,6 +177,8 @@ export default function Settings() {
     if (window.confirm('Sei sicuro di voler cancellare tutti i dati? Questa azione non può essere annullata.')) {
       try {
         await dbOps.clearAllData();
+        // Rifletti subito la cancellazione anche nel cloud (se autenticato)
+        try { await BackupManager.exportToSupabaseStorage(); } catch {}
         
         // Update backup stats
         const stats = await BackupManager.getBackupStats();
@@ -631,6 +639,8 @@ export default function Settings() {
                 </div>
               </Button>
             </div>
+
+            {/* Pulsanti cloud rimossi: backup cloud ora automatico */}
           </CardContent>
         </Card>
       </div>
