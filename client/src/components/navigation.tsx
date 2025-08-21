@@ -43,7 +43,7 @@ export function Navigation() {
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 md:glass-effect">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
-        <div className="flex justify-between items-center py-4 md:py-8">
+        <div className="flex items-center justify-center md:justify-between py-4 md:py-8">
           <Link href="/">
             <div className="hidden md:flex items-center space-x-5 cursor-pointer hover:opacity-80 transition-opacity">
               <img src={Logo} alt="Logo" className="w-20 h-20 lg:w-28 lg:h-28 object-contain" />
@@ -52,7 +52,7 @@ export function Navigation() {
           </Link>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-10">
+          <nav className="hidden md:flex items-center space-x-10 md:ml-auto">
             {navItems.map(({ path, icon: Icon, label }) => {
               const isActive = location === path;
               return (
@@ -105,7 +105,7 @@ export function Navigation() {
           </nav>
           
           {/* Destra: azioni + autenticazione mobile */}
-          <div className="flex items-center space-x-2 md:space-x-3">
+          <div className="flex items-center space-x-2 md:space-x-3 md:ml-0">
             <Button
               variant="ghost"
               size="icon"
