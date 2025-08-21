@@ -52,7 +52,7 @@ export function Navigation() {
           </Link>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-10 md:ml-auto">
+          <nav className="hidden md:flex items-center space-x-10 md:ml-auto md:mr-6">
             {navItems.map(({ path, icon: Icon, label }) => {
               const isActive = location === path;
               return (
@@ -77,13 +77,21 @@ export function Navigation() {
               <div className="hidden md:flex items-center gap-3 ml-4">
                 <AccountDialog
                   trigger={
-                    <Button variant="outline" className="gap-2 rounded-full border-gray-300 dark:border-gray-700">
+                    <Button type="button" variant="outline" className="gap-2 rounded-full border-gray-300 dark:border-gray-700">
                       <UserIcon size={16} />
                       Profilo
                     </Button>
                   }
                 />
-                <Button variant="outline" className="rounded-full border-gray-300 dark:border-gray-700" onClick={signOut}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-full border-gray-300 dark:border-gray-700"
+                  onClick={async () => {
+                    await signOut();
+                    toast({ title: 'Sei uscito', description: 'Logout effettuato con successo' });
+                  }}
+                >
                   <LogOut size={16} />
                   Esci
                 </Button>
@@ -93,6 +101,7 @@ export function Navigation() {
                 <LoginDialog
                   trigger={
                     <Button
+                      type="button"
                       variant="outline"
                       className="rounded-full border-gray-300 dark:border-gray-700"
                     >
@@ -105,7 +114,7 @@ export function Navigation() {
           </nav>
           
           {/* Destra: azioni + autenticazione mobile */}
-          <div className="flex items-center space-x-2 md:space-x-3 md:ml-0">
+          <div className="flex items-center space-x-2 md:space-x-3 md:ml-6">
             <Button
               variant="ghost"
               size="icon"
