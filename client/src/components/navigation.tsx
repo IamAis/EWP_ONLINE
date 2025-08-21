@@ -72,37 +72,40 @@ export function Navigation() {
                 </Link>
               );
             })}
-            {/* Autenticazione */}
+            {/* Autenticazione - desktop */}
             {user ? (
-              <div className="flex items-center gap-3 ml-4">
+              <div className="hidden md:flex items-center gap-3 ml-4">
                 <AccountDialog
                   trigger={
-                    <Button variant="outline">
+                    <Button variant="outline" className="gap-2 rounded-full border-gray-300 dark:border-gray-700">
                       <UserIcon size={16} />
                       Profilo
                     </Button>
                   }
                 />
-                <Button variant="outline" onClick={signOut}>
+                <Button variant="outline" className="rounded-full border-gray-300 dark:border-gray-700" onClick={signOut}>
                   <LogOut size={16} />
                   Esci
                 </Button>
               </div>
             ) : (
-              <LoginDialog
-                trigger={
-                  <Button
-                    variant="outline"
-                    className="ml-4"
-                  >
-                    Login
-                  </Button>
-                }
-              />
+              <div className="hidden md:flex ml-4">
+                <LoginDialog
+                  trigger={
+                    <Button
+                      variant="outline"
+                      className="rounded-full border-gray-300 dark:border-gray-700"
+                    >
+                      Login
+                    </Button>
+                  }
+                />
+              </div>
             )}
           </nav>
           
-          <div className="flex items-center space-x-5">
+          {/* Destra: azioni + autenticazione mobile */}
+          <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               size="icon"
@@ -124,6 +127,34 @@ export function Navigation() {
             >
               <CloudUpload className="text-indigo-500" size={24} />
             </Button>
+
+            {/* Autenticazione - mobile: sposta i bottoni nel top nav */}
+            {user ? (
+              <div className="md:hidden flex items-center gap-2">
+                <AccountDialog
+                  trigger={
+                    <Button size="sm" className="gap-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                      <UserIcon size={16} />
+                      Profilo
+                    </Button>
+                  }
+                />
+                <Button size="sm" className="rounded-full bg-gray-800 hover:bg-gray-900 text-white" onClick={signOut}>
+                  <LogOut size={16} />
+                  Esci
+                </Button>
+              </div>
+            ) : (
+              <div className="md:hidden">
+                <LoginDialog
+                  trigger={
+                    <Button size="sm" className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                      Login
+                    </Button>
+                  }
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
