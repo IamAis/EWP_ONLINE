@@ -6,7 +6,7 @@ export class BackupManager {
   private static autoBackupTimer: number | undefined;
   private static autoBackupDelayMs = 2000;
   static pauseAutoBackup = false;
-  static autoBackupEnabled = true;
+  static autoBackupEnabled = false;
   static async exportToJSON(): Promise<void> {
     try {
       const data = await dbOps.exportData();
@@ -194,16 +194,62 @@ export class BackupManager {
 
   static scheduleAutoBackup(): void {
     if (!this.autoBackupEnabled || this.pauseAutoBackup) return;
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(({ data }: { data: { user: { id: string } | null } }) => {
       if (!data?.user) return;
       if (this.autoBackupTimer) clearTimeout(this.autoBackupTimer);
       this.autoBackupTimer = window.setTimeout(() => {
-        // Export immediatamente e poi re-importa per garantire sincronia locale/remota
-        this.exportToSupabaseStorage()
-          .then(() => this.importFromSupabaseStorage())
-          .catch(() => void 0);
+        // Auto disabilitato: non fare nulla
+        return;
       }, this.autoBackupDelayMs);
     });
+  }
+
+  // Merge dal cloud: scarica e unisce senza cancellare DB locale
+  static async mergeFromSupabaseStorage(): Promise<void> {
+    const BUCKET = 'backups';
+    const { data: userRes, error: userErr } = await supabase.auth.getUser();
+    if (userErr) throw userErr;
+    const userId = userRes.user?.id;
+    if (!userId) throw new Error('Utente non autenticato');
+
+    const latestPath = `${userId}/data.json`;
+    const { data, error } = await supabase.storage.from(BUCKET).download(latestPath);
+    if (error) throw error;
+    if (!data) throw new Error('Nessun backup cloud trovato');
+
+    const text = await data.text();
+    const json = JSON.parse(text);
+
+    // Valida e processa come import standard, ma senza clear
+    type WorkoutRaw = { id: string; createdAt: string | Date; updatedAt: string | Date } & Record<string, any>;
+    type ClientRaw = { id: string; createdAt: string | Date } & Record<string, any>;
+    const toArraySafe = <T extends Record<string, any>>(v: unknown): T[] => Array.isArray(v) ? (v as T[]) : [];
+    const workouts = toArraySafe<WorkoutRaw>(json.workouts);
+    const clients = toArraySafe<ClientRaw>(json.clients);
+    const coachProfile = (json.coachProfile ?? null) as any;
+
+    // Unione: upsert semplice per id dove presente
+    this.pauseAutoBackup = true;
+    try {
+      if (workouts.length) {
+        for (const w of workouts) {
+          const payload: any = { ...w, createdAt: new Date(w.createdAt), updatedAt: new Date(w.updatedAt) };
+          try { await db.workouts.put(payload); } catch {}
+        }
+      }
+      if (clients.length) {
+        for (const c of clients) {
+          const payload: any = { ...c, createdAt: new Date(c.createdAt) };
+          try { await db.clients.put(payload); } catch {}
+        }
+      }
+      if (coachProfile) {
+        try { await db.coachProfile.clear(); await db.coachProfile.add(coachProfile); } catch {}
+        localStorage.setItem('coach-profile', JSON.stringify(coachProfile));
+      }
+    } finally {
+      this.pauseAutoBackup = false;
+    }
   }
 
   // Sync iniziale: importa dal cloud solo se il DB locale è vuoto
