@@ -14,6 +14,7 @@ import { dbOps } from '@/lib/database';
 import { useToast } from '@/hooks/use-toast';
 import { insertCoachProfileSchema, type InsertCoachProfile } from '@shared/schema';
 import { useRef } from 'react';
+import { useAuth } from '@/hooks/use-auth';
 import { processImageForUpload } from '@/lib/image-utils';
 
 export default function Settings() {
@@ -21,6 +22,7 @@ export default function Settings() {
   const createCoachProfile = useCreateCoachProfile();
   const updateCoachProfile = useUpdateCoachProfile();
   const { toast } = useToast();
+  const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [backupStats, setBackupStats] = useState<{
@@ -617,6 +619,10 @@ export default function Settings() {
               {/* Carica in Cloud (sovrascrive) */}
               <Button
                 onClick={async () => {
+                  if (!user) {
+                    toast({ title: 'Serve un account', description: 'Crea o accedi per usare il cloud', variant: 'destructive' });
+                    return;
+                  }
                   if (!window.confirm('Il backup remoto verrà reimpiazzato con i dati attuali. Procedere?')) return;
                   try {
                     await BackupManager.exportToSupabaseStorage();
@@ -627,9 +633,11 @@ export default function Settings() {
                     toast({ title: 'Errore', description: 'Impossibile caricare in cloud', variant: 'destructive' });
                   }
                 }}
-                className="h-auto p-4 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/30 dark:to-blue-900/30 border border-sky-200 dark:border-sky-700 hover:from-sky-100 hover:to-blue-100 dark:hover:from-sky-800/40 dark:hover:to-blue-800/40 text-left justify-start"
+                className="group h-auto p-4 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/30 dark:to-blue-900/30 text-left justify-start rounded-xl relative"
                 variant="ghost"
               >
+                <span className="pointer-events-none absolute inset-0 rounded-xl p-[1px] bg-[conic-gradient(at_top_left,_var(--tw-gradient-stops))] from-pink-500 via-purple-500 via-indigo-500 via-blue-500 via-green-500 to-yellow-500 opacity-60"></span>
+                <span className="absolute inset-[1px] rounded-[11px] bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/30 dark:to-blue-900/30 border border-transparent"></span>
                 <div className="flex items-center w-full">
                   <Upload className="text-sky-600 mr-3" size={20} />
                   <div>
@@ -646,6 +654,10 @@ export default function Settings() {
               {/* Carica dal Cloud (merge) */}
               <Button
                 onClick={async () => {
+                  if (!user) {
+                    toast({ title: 'Serve un account', description: 'Crea o accedi per usare il cloud', variant: 'destructive' });
+                    return;
+                  }
                   try {
                     await BackupManager.mergeFromSupabaseStorage();
                     const stats = await BackupManager.getBackupStats();
@@ -656,9 +668,11 @@ export default function Settings() {
                     toast({ title: 'Errore', description: 'Impossibile caricare dal cloud', variant: 'destructive' });
                   }
                 }}
-                className="h-auto p-4 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 border border-yellow-200 dark:border-amber-700 hover:from-yellow-100 hover:to-amber-100 dark:hover:from-yellow-800/40 dark:hover:to-amber-800/40 text-left justify-start"
+                className="group h-auto p-4 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 text-left justify-start rounded-xl relative"
                 variant="ghost"
               >
+                <span className="pointer-events-none absolute inset-0 rounded-xl p-[1px] bg-[conic-gradient(at_top_left,_var(--tw-gradient-stops))] from-pink-500 via-purple-500 via-indigo-500 via-blue-500 via-green-500 to-yellow-500 opacity-60"></span>
+                <span className="absolute inset-[1px] rounded-[11px] bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 border border-transparent"></span>
                 <div className="flex items-center w-full">
                   <Download className="text-amber-600 mr-3" size={20} />
                   <div>
