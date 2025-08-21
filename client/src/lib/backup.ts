@@ -198,7 +198,10 @@ export class BackupManager {
       if (!data?.user) return;
       if (this.autoBackupTimer) clearTimeout(this.autoBackupTimer);
       this.autoBackupTimer = window.setTimeout(() => {
-        this.exportToSupabaseStorage().catch(() => void 0);
+        // Export immediatamente e poi re-importa per garantire sincronia locale/remota
+        this.exportToSupabaseStorage()
+          .then(() => this.importFromSupabaseStorage())
+          .catch(() => void 0);
       }, this.autoBackupDelayMs);
     });
   }

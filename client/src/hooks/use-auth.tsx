@@ -28,6 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      // Se non c'è sessione, forza uno stato di logout per coerenza
+      if (!session) {
+        try { await supabase.auth.signOut(); } catch {}
+      }
     })();
 
     const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -36,6 +40,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (session?.user) {
         // sync iniziale in background senza bloccare UI/logout
         BackupManager.ensureInitialSync();
+      } else {
+        // Se la sessione non esiste più, applica logout coerente
+        try { await supabase.auth.signOut(); } catch {}
       }
     });
 
