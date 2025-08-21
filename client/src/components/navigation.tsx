@@ -42,10 +42,10 @@ export function Navigation() {
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 md:glass-effect">
-      <div className="max-w-7xl mx-auto px-8 sm:px-10 lg:px-12">
-        <div className="flex justify-between items-center py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
+        <div className="flex justify-between items-center py-4 md:py-8">
           <Link href="/">
-            <div className="flex items-center space-x-5 cursor-pointer hover:opacity-80 transition-opacity">
+            <div className="hidden md:flex items-center space-x-5 cursor-pointer hover:opacity-80 transition-opacity">
               <img src={Logo} alt="Logo" className="w-20 h-20 lg:w-28 lg:h-28 object-contain" />
               {/* Titoli rimossi come richiesto */}
             </div>
@@ -105,12 +105,12 @@ export function Navigation() {
           </nav>
           
           {/* Destra: azioni + autenticazione mobile */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 md:space-x-3">
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="glass-effect hover:bg-white/20 dark:hover:bg-black/20 w-12 h-12"
+              className="glass-effect hover:bg-white/20 dark:hover:bg-black/20 w-10 h-10 md:w-12 md:h-12"
             >
               {theme === 'light' ? (
                 <Sun className="text-yellow-500" size={24} />
@@ -123,7 +123,7 @@ export function Navigation() {
               variant="ghost"
               size="icon"
               onClick={handleBackup}
-              className="glass-effect hover:bg-white/20 dark:hover:bg-black/20 w-12 h-12"
+              className="glass-effect hover:bg-white/20 dark:hover:bg-black/20 w-10 h-10 md:w-12 md:h-12"
             >
               <CloudUpload className="text-indigo-500" size={24} />
             </Button>
