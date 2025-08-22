@@ -40,6 +40,9 @@ export function LoginDialog({ trigger }: { trigger: React.ReactNode }) {
 			const { error } = await supabase.auth.signUp({
 				email,
 				password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
 			});
 			setLoading(false);
 			if (error) {
