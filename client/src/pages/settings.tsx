@@ -623,7 +623,7 @@ export default function Settings() {
                     toast({ title: 'Serve un account', description: 'Crea o accedi per usare il cloud', variant: 'destructive' });
                     return;
                   }
-                  if (!window.confirm('Il backup remoto verrà reimpiazzato con i dati attuali. Procedere?')) return;
+                  if (!window.confirm('Il backup remoto verrà reimpiazzato con i dati attuali, è consigliato prima caricare i dati dal cloud. Procedere?')) return;
                   try {
                     await BackupManager.exportToSupabaseStorage();
                     const stats = await BackupManager.getBackupStats();
@@ -633,19 +633,17 @@ export default function Settings() {
                     toast({ title: 'Errore', description: 'Impossibile caricare in cloud', variant: 'destructive' });
                   }
                 }}
-                className="group h-auto p-4 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/30 dark:to-blue-900/30 text-left justify-start rounded-xl relative"
+                className="h-auto p-4 text-left justify-start rounded-xl relative bg-sky-100 dark:bg-sky-900/30 border-2 border-yellow-500 hover:bg-sky-200 dark:hover:bg-sky-800/40 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                 variant="ghost"
               >
-                <span className="pointer-events-none absolute inset-0 rounded-xl p-[1px] bg-[conic-gradient(at_top_left,_var(--tw-gradient-stops))] from-pink-500 via-purple-500 via-indigo-500 via-blue-500 via-green-500 to-yellow-500 opacity-60"></span>
-                <span className="absolute inset-[1px] rounded-[11px] bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/30 dark:to-blue-900/30 border border-transparent"></span>
                 <div className="flex items-center w-full">
-                  <Upload className="text-sky-600 mr-3" size={20} />
+                  <Upload className="text-sky-700 dark:text-sky-300 mr-3" size={20} />
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm">
                       Carica in Cloud
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Sostituisce il backup remoto con i dati attuali
+                    <p className="text-xs text-gray-700 dark:text-gray-300">
+                      Sostituisci i dati nel cloud
                     </p>
                   </div>
                 </div>
@@ -655,7 +653,7 @@ export default function Settings() {
               <Button
                 onClick={async () => {
                   if (!user) {
-                    toast({ title: 'Serve un account', description: 'Crea o accedi per usare il cloud', variant: 'destructive' });
+                    toast({ title: 'Serve un account', description: 'Crea un account o accedi per usare il cloud', variant: 'destructive' });
                     return;
                   }
                   try {
@@ -668,19 +666,17 @@ export default function Settings() {
                     toast({ title: 'Errore', description: 'Impossibile caricare dal cloud', variant: 'destructive' });
                   }
                 }}
-                className="group h-auto p-4 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 text-left justify-start rounded-xl relative"
+                className="h-auto p-4 text-left justify-start rounded-xl relative bg-sky-100 dark:bg-sky-900/30 border-2 border-yellow-500 hover:bg-sky-200 dark:hover:bg-sky-800/40 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
                 variant="ghost"
               >
-                <span className="pointer-events-none absolute inset-0 rounded-xl p-[1px] bg-[conic-gradient(at_top_left,_var(--tw-gradient-stops))] from-pink-500 via-purple-500 via-indigo-500 via-blue-500 via-green-500 to-yellow-500 opacity-60"></span>
-                <span className="absolute inset-[1px] rounded-[11px] bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/30 dark:to-amber-900/30 border border-transparent"></span>
                 <div className="flex items-center w-full">
-                  <Download className="text-amber-600 mr-3" size={20} />
+                  <Download className="text-sky-700 dark:text-sky-300 mr-3" size={20} />
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm">
                       Carica dal Cloud (unisci)
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Unisce i dati remoti mantenendo quelli locali
+                    <p className="text-xs text-gray-700 dark:text-gray-300">
+                      Upload you data;
                     </p>
                   </div>
                 </div>
