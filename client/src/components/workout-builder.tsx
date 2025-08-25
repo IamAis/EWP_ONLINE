@@ -99,39 +99,31 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
         }
       ]
     };
-    const updatedWeeks = [...weeks, newWeek];
-    setWeeks(updatedWeeks);
-    // Sincronizza il form con le nuove settimane
-    form.setValue('weeks', updatedWeeks);
+    setWeeks([...weeks, newWeek]);
   };
 
   const updateWeek = (weekId: string, updatedWeek: Week) => {
-    const updatedWeeks = weeks.map(week => 
+    setWeeks(weeks.map(week => 
       week.id === weekId ? updatedWeek : week
-    );
-    setWeeks(updatedWeeks);
-    // Sincronizza il form con le modifiche delle settimane
-    form.setValue('weeks', updatedWeeks);
+    ));
   };
 
   const removeWeek = (weekId: string) => {
     const filtered = weeks.filter(week => week.id !== weekId);
     const renumbered = filtered.map((week, index) => ({ ...week, number: index + 1 }));
     setWeeks(renumbered);
-    // Sincronizza il form con la rimozione della settimana
-    form.setValue('weeks', renumbered);
   };
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
       if (existingWorkout) {
-        // Update existing workout
+        // Update existing workout - forza l'uso delle settimane attuali
         await updateWorkout.mutateAsync({
           id: existingWorkout.id,
           updates: {
             ...data,
             coachName: coachProfile?.name || data.coachName, // Usa il coach dalle impostazioni
-            weeks,
+            weeks: weeks, // Forza l'uso dello stato attuale delle settimane
             updatedAt: new Date()
           }
         });
@@ -141,11 +133,11 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
           description: "Le modifiche sono state salvate con successo"
         });
       } else {
-        // Create new workout
+        // Create new workout - forza l'uso delle settimane attuali
         const workoutData: InsertWorkout = {
           ...data,
           coachName: coachProfile?.name || data.coachName, // Usa il coach dalle impostazioni
-          weeks
+          weeks: weeks // Forza l'uso dello stato attuale delle settimane
         };
         
         await createWorkout.mutateAsync(workoutData);
