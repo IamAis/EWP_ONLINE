@@ -204,7 +204,7 @@ export class BackupManager {
     });
   }
 
-  // Merge dal cloud: scarica e unisce senza cancellare DB locale
+  // Carica dal cloud: scarica e sostituisce completamente i dati locali
   static async mergeFromSupabaseStorage(): Promise<void> {
     const BUCKET = 'backups';
     const { data: userRes, error: userErr } = await supabase.auth.getUser();
@@ -217,36 +217,12 @@ export class BackupManager {
     if (error) throw error;
     if (!data) throw new Error('Nessun backup cloud trovato');
 
-    const text = await data.text();
-    const json = JSON.parse(text);
-
-    // Valida e processa come import standard, ma senza clear
-    type WorkoutRaw = { id: string; createdAt: string | Date; updatedAt: string | Date } & Record<string, any>;
-    type ClientRaw = { id: string; createdAt: string | Date } & Record<string, any>;
-    const toArraySafe = <T extends Record<string, any>>(v: unknown): T[] => Array.isArray(v) ? (v as T[]) : [];
-    const workouts = toArraySafe<WorkoutRaw>(json.workouts);
-    const clients = toArraySafe<ClientRaw>(json.clients);
-    const coachProfile = (json.coachProfile ?? null) as any;
-
-    // Unione: upsert semplice per id dove presente
+    // Evita trigger di auto-backup durante l'import
     this.pauseAutoBackup = true;
     try {
-      if (workouts.length) {
-        for (const w of workouts) {
-          const payload: any = { ...w, createdAt: new Date(w.createdAt), updatedAt: new Date(w.updatedAt) };
-          try { await db.workouts.put(payload); } catch {}
-        }
-      }
-      if (clients.length) {
-        for (const c of clients) {
-          const payload: any = { ...c, createdAt: new Date(c.createdAt) };
-          try { await db.clients.put(payload); } catch {}
-        }
-      }
-      if (coachProfile) {
-        try { await db.coachProfile.clear(); await db.coachProfile.add(coachProfile); } catch {}
-        localStorage.setItem('coach-profile', JSON.stringify(coachProfile));
-      }
+      const file = new File([data], 'data.json', { type: 'application/json' });
+      // Usa importFromJSON che pulisce sempre tutto prima di importare
+      await this.importFromJSON(file);
     } finally {
       this.pauseAutoBackup = false;
     }
