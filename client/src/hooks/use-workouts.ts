@@ -42,8 +42,14 @@ export function useUpdateWorkout() {
   return useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: Partial<Workout> }) =>
       dbOps.updateWorkout(id, updates),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workouts'] });
+    onSuccess: (updatedWorkout, { id }) => {
+      // Hard reset: rimuovi completamente le query dalla cache e ricarica
+      queryClient.removeQueries({ queryKey: ['workouts'] });
+      queryClient.removeQueries({ queryKey: ['workouts', id] });
+      
+      // Forza il re-fetch immediato
+      queryClient.refetchQueries({ queryKey: ['workouts'] });
+      queryClient.refetchQueries({ queryKey: ['workouts', id] });
     },
   });
 }

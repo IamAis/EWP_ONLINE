@@ -132,6 +132,12 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
           title: "Scheda aggiornata",
           description: "Le modifiche sono state salvate con successo"
         });
+        
+        // Hard reset del form dopo l'aggiornamento
+        setTimeout(() => {
+          onSuccess?.();
+        }, 100);
+        
       } else {
         // Create new workout - forza l'uso delle settimane attuali
         const workoutData: InsertWorkout = {
@@ -150,9 +156,8 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
         // Reset form for new workouts
         form.reset();
         setWeeks([]);
+        onSuccess?.();
       }
-
-      onSuccess?.();
     } catch (error) {
       toast({
         title: "Errore",
@@ -447,9 +452,13 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
               <Button 
-                type="submit"
+                type="button"
                 disabled={createWorkout.isPending || updateWorkout.isPending}
                 className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
+                onClick={() => {
+                  const formData = form.getValues();
+                  onSubmit(formData);
+                }}
               >
                 <Save className="mr-2" size={16} />
                 {(createWorkout.isPending || updateWorkout.isPending) ? 'Salvando...' : (existingWorkout ? 'Aggiorna Scheda' : 'Salva Scheda')}
