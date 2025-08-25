@@ -99,19 +99,27 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
         }
       ]
     };
-    setWeeks([...weeks, newWeek]);
+    const updatedWeeks = [...weeks, newWeek];
+    setWeeks(updatedWeeks);
+    // Sincronizza il form con le nuove settimane
+    form.setValue('weeks', updatedWeeks);
   };
 
   const updateWeek = (weekId: string, updatedWeek: Week) => {
-    setWeeks(weeks.map(week => 
+    const updatedWeeks = weeks.map(week => 
       week.id === weekId ? updatedWeek : week
-    ));
+    );
+    setWeeks(updatedWeeks);
+    // Sincronizza il form con le modifiche delle settimane
+    form.setValue('weeks', updatedWeeks);
   };
 
   const removeWeek = (weekId: string) => {
     const filtered = weeks.filter(week => week.id !== weekId);
     const renumbered = filtered.map((week, index) => ({ ...week, number: index + 1 }));
     setWeeks(renumbered);
+    // Sincronizza il form con la rimozione della settimana
+    form.setValue('weeks', renumbered);
   };
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {

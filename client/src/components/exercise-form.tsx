@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +19,14 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
     days: week.days || []
   });
   const { toast } = useToast();
+
+  // Sincronizza lo stato locale quando le props cambiano
+  useEffect(() => {
+    setLocalWeek({
+      ...week,
+      days: week.days || []
+    });
+  }, [week]);
 
   const addDay = () => {
     const newDay: Day = {
@@ -155,7 +163,7 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
       </div>
 
       {/* Days */}
-      <div className="space-y-4">
+      <div className="space-y-10">
         {(localWeek.days || []).map((day, dayIndex) => (
           <div key={day.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white/40 dark:bg-gray-900/20">
             <div className="flex items-center justify-between mb-3">
