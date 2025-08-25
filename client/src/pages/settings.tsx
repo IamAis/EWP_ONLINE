@@ -656,12 +656,12 @@ export default function Settings() {
                     toast({ title: 'Serve un account', description: 'Crea un account o accedi per usare il cloud', variant: 'destructive' });
                     return;
                   }
-                  if (!window.confirm('I dati locali verranno completamente sostituiti con quelli dal cloud. Procedere?')) return;
+                  if (!window.confirm('I dati dal cloud verranno aggiunti a quelli locali. Procedere?')) return;
                   try {
                     await BackupManager.mergeFromSupabaseStorage();
                     const stats = await BackupManager.getBackupStats();
                     setBackupStats(stats);
-                    toast({ title: 'Dati caricati', description: 'Dati dal cloud caricati con successo.' });
+                    toast({ title: 'Dati uniti', description: 'Dati dal cloud aggiunti con successo.' });
                     setTimeout(() => window.location.reload(), 500);
                   } catch (error) {
                     toast({ title: 'Errore', description: 'Impossibile caricare dal cloud', variant: 'destructive' });
@@ -674,10 +674,10 @@ export default function Settings() {
                   <Download className="text-sky-700 dark:text-sky-300 mr-3" size={20} />
                   <div>
                     <p className="font-semibold text-gray-900 dark:text-white text-sm">
-                      Carica dal Cloud
+                      Carica dal Cloud (unisci)
                     </p>
                     <p className="text-xs text-gray-700 dark:text-gray-300">
-                      Sostituisci dati locali con quelli del cloud
+                      Aggiungi dati dal cloud a quelli locali
                     </p>
                   </div>
                 </div>

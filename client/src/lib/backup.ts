@@ -204,7 +204,7 @@ export class BackupManager {
     });
   }
 
-  // Carica dal cloud: scarica e sostituisce completamente i dati locali
+  // Carica dal cloud: scarica e fa un vero merge con i dati locali
   static async mergeFromSupabaseStorage(): Promise<void> {
     const BUCKET = 'backups';
     const { data: userRes, error: userErr } = await supabase.auth.getUser();
@@ -217,12 +217,45 @@ export class BackupManager {
     if (error) throw error;
     if (!data) throw new Error('Nessun backup cloud trovato');
 
-    // Evita trigger di auto-backup durante l'import
+    const text = await data.text();
+    const json = JSON.parse(text);
+
+    // Valida e processa come import standard, ma con merge vero
+    type WorkoutRaw = { id: string; createdAt: string | Date; updatedAt: string | Date } & Record<string, any>;
+    type ClientRaw = { id: string; createdAt: string | Date } & Record<string, any>;
+    const toArraySafe = <T extends Record<string, any>>(v: unknown): T[] => Array.isArray(v) ? (v as T[]) : [];
+    const workouts = toArraySafe<WorkoutRaw>(json.workouts);
+    const clients = toArraySafe<ClientRaw>(json.clients);
+    const coachProfile = (json.coachProfile ?? null) as any;
+
+    // Merge intelligente: aggiunge solo se non esiste già
     this.pauseAutoBackup = true;
     try {
-      const file = new File([data], 'data.json', { type: 'application/json' });
-      // Usa importFromJSON che pulisce sempre tutto prima di importare
-      await this.importFromJSON(file);
+      if (workouts.length) {
+        for (const w of workouts) {
+          const existing = await db.workouts.get(w.id);
+          if (!existing) {
+            const payload: any = { ...w, createdAt: new Date(w.createdAt), updatedAt: new Date(w.updatedAt) };
+            try { await db.workouts.add(payload); } catch {}
+          }
+        }
+      }
+      if (clients.length) {
+        for (const c of clients) {
+          const existing = await db.clients.get(c.id);
+          if (!existing) {
+            const payload: any = { ...c, createdAt: new Date(c.createdAt) };
+            try { await db.clients.add(payload); } catch {}
+          }
+        }
+      }
+      if (coachProfile) {
+        const existing = await db.coachProfile.toArray();
+        if (existing.length === 0) {
+          try { await db.coachProfile.add(coachProfile); } catch {}
+          localStorage.setItem('coach-profile', JSON.stringify(coachProfile));
+        }
+      }
     } finally {
       this.pauseAutoBackup = false;
     }
