@@ -9,14 +9,14 @@ import {
 	DialogFooter
 } from './ui/dialog';
 import { Input } from './ui/input';
-import { Label } from './ui/label'; // Aggiunta questa importazione
+import { Label } from './ui/label';
 import { Button } from './ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 
 export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
-	const { user } = useAuth();
+	const { user, signOut } = useAuth();
 	const { toast } = useToast();
 	const [open, setOpen] = useState(false);
 	const initialName = useMemo(() => (user?.user_metadata?.name as string) || '', [user]);
@@ -24,10 +24,13 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 
 	const [name, setName] = useState(initialName);
 	const [email, setEmail] = useState(initialEmail);
+	const [confirmEmail, setConfirmEmail] = useState('');
+	const [confirmDelete, setConfirmDelete] = useState('');
+	const [confirmDeleteText, setConfirmDeleteText] = useState('');
 	const [saving, setSaving] = useState(false);
 	const [changingEmail, setChangingEmail] = useState(false);
-	// Aggiungi questi stati
 	const [changingPassword, setChangingPassword] = useState(false);
+	const [deleting, setDeleting] = useState(false);
 
 	useEffect(() => {
 		if (open) {
@@ -41,7 +44,6 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 		if (!user) return;
 		setSaving(true);
 		try {
-			// aggiorna solo il nome
 			if (name !== initialName) {
 				const { error } = await supabase.auth.updateUser({ data: { name } });
 				if (error) throw error;
@@ -62,12 +64,21 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 	const onChangeEmail = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!email || email === initialEmail) return;
+		if (email !== confirmEmail) {
+			toast({
+				title: 'Errore',
+				description: 'Le email non corrispondono',
+				variant: 'destructive'
+			});
+			return;
+		}
 		
 		setChangingEmail(true);
 		try {
+			const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
 			const { error } = await supabase.auth.updateUser(
 				{ email },
-				{ emailRedirectTo: `${window.location.origin}` }
+				{ emailRedirectTo: siteUrl }
 			);
 			
 			if (error) throw error;
@@ -89,15 +100,15 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 		}
 	};
 
-	// Aggiungi questa funzione
 	const onChangePassword = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!user?.email) return;
 		
 		setChangingPassword(true);
 		try {
+			const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
 			const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-				redirectTo: `${window.location.origin}/reset-password`
+				redirectTo: `${siteUrl}/reset-password`
 			});
 			
 			if (error) throw error;
@@ -116,6 +127,48 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 			});
 		} finally {
 			setChangingPassword(false);
+		}
+	};
+
+	const onDeleteAccount = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!user) return;
+		if (confirmDelete !== user.email) {
+			toast({
+				title: 'Errore',
+				description: 'Inserisci la tua email per confermare l\'eliminazione',
+				variant: 'destructive'
+			});
+			return;
+		}
+		if (confirmDeleteText !== 'ELIMINA') {
+			toast({
+				title: 'Errore',
+				description: 'Scrivi "ELIMINA" per confermare l\'eliminazione definitiva',
+				variant: 'destructive'
+			});
+			return;
+		}
+		
+		setDeleting(true);
+		try {
+			const { error } = await supabase.rpc('delete_user');
+			if (error) throw error;
+			
+			await signOut();
+			toast({ 
+				title: 'Account eliminato', 
+				description: 'Il tuo account è stato eliminato con successo.' 
+			});
+			setOpen(false);
+		} catch (err: any) {
+			toast({ 
+				title: 'Errore', 
+				description: err?.message || 'Impossibile eliminare l\'account', 
+				variant: 'destructive' 
+			});
+		} finally {
+			setDeleting(false);
 		}
 	};
 
@@ -157,6 +210,13 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 						/>
+						<Label htmlFor="confirmEmail">Conferma Email</Label>
+						<Input
+							id="confirmEmail"
+							type="email"
+							value={confirmEmail}
+							onChange={(e) => setConfirmEmail(e.target.value)}
+						/>
 						<p className="text-sm text-gray-500">
 							Riceverai un'email di verifica per confermare il cambio.
 						</p>
@@ -165,7 +225,7 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 						<Button 
 							type="submit" 
 							variant="secondary" 
-							disabled={changingEmail || email === initialEmail}
+							disabled={changingEmail || email === initialEmail || !email || !confirmEmail}
 						>
 							{changingEmail ? 'Invio email...' : 'Cambia email'}
 						</Button>
@@ -181,6 +241,38 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 					<DialogFooter>
 						<Button type="submit" variant="secondary" disabled={changingPassword}>
 							{changingPassword ? 'Invio email...' : 'Reimposta password'}
+						</Button>
+					</DialogFooter>
+				</form>
+
+				<hr className="my-4 border-gray-200 dark:border-gray-800" />
+
+				<form onSubmit={onDeleteAccount} className="space-y-3">
+					<p className="text-sm text-gray-500 dark:text-gray-400">
+						Elimina definitivamente il tuo account e tutti i dati associati.
+						Per confermare, inserisci la tua email: {user?.email}
+					</p>
+					<div className="space-y-2">
+						<Input
+							type="email"
+							value={confirmDelete}
+							onChange={(e) => setConfirmDelete(e.target.value)}
+							placeholder="Inserisci la tua email per confermare"
+						/>
+						<Input
+							type="text"
+							value={confirmDeleteText}
+							onChange={(e) => setConfirmDeleteText(e.target.value)}
+							placeholder='Scrivi "ELIMINA" per confermare'
+						/>
+					</div>
+					<DialogFooter>
+						<Button 
+							type="submit" 
+							variant="destructive" 
+							disabled={deleting || !confirmDelete || !confirmDeleteText}
+						>
+							{deleting ? 'Eliminazione...' : 'Elimina account'}
 						</Button>
 					</DialogFooter>
 				</form>
