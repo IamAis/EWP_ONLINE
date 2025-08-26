@@ -3,9 +3,10 @@
     "",
     "\\client",
     "\\client\\src",
-    "\\client\\src\\components",
+    "\\client\\src\\components\\ui",
+    "\\client\\src\\lib",
     "\\client\\src\\pages"
   ],
-  "SelectedNode": "\\client\\index.html",
+  "SelectedNode": "\\client\\src\\lib\\backup.ts",
   "PreviewInSolutionExplorer": false
 }
