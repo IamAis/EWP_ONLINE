@@ -187,13 +187,13 @@ export default function Home() {
                 Azioni Rapide
               </h3>
               
-              <div className="space-y-3">
+              <div className="space-y-6">
                 <Button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full p-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border border-indigo-200 dark:border-indigo-700 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-800/40 dark:hover:to-purple-800/40 text-left justify-start h-auto"
+                  className="w-full p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border border-indigo-200 dark:border-indigo-700 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-800/40 dark:hover:to-purple-800/40 text-left justify-start h-auto min-h-[70px]"
                   variant="ghost"
                 >
-                  <Upload className="text-indigo-500 mr-3" size={20} />
+                  <Upload className="text-indigo-500 mr-4" size={22} />
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white text-sm">
                       Importa Dati
@@ -206,10 +206,10 @@ export default function Home() {
 
                 <Button
                   onClick={handleBackup}
-                  className="w-full p-3 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 border border-emerald-200 dark:border-emerald-700 hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-800/40 dark:hover:to-teal-800/40 text-left justify-start h-auto"
+                  className="w-full p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 border border-emerald-200 dark:border-emerald-700 hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-800/40 dark:hover:to-teal-800/40 text-left justify-start h-auto min-h-[70px]"
                   variant="ghost"
                 >
-                  <Download className="text-emerald-500 mr-3" size={20} />
+                  <Download className="text-emerald-500 mr-4" size={22} />
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white text-sm">
                       Backup Dati
@@ -220,22 +220,24 @@ export default function Home() {
                   </div>
                 </Button>
 
-                <Link href="/clients">
-                  <Button
-                    className="w-full p-3 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 border border-orange-200 dark:border-orange-700 hover:from-orange-100 hover:to-red-100 dark:hover:from-orange-800/40 dark:hover:to-red-800/40 text-left justify-start h-auto"
-                    variant="ghost"
-                  >
-                    <Users className="text-orange-500 mr-3" size={20} />
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white text-sm">
-                        Gestisci Clienti
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Aggiungi/Modifica
-                      </p>
-                    </div>
-                  </Button>
-                </Link>
+                <div>
+                  <Link href="/clients">
+                    <Button
+                      className="w-full p-4 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/30 dark:to-red-900/30 border border-orange-200 dark:border-orange-700 hover:from-orange-100 hover:to-red-100 dark:hover:from-orange-800/40 dark:hover:to-red-800/40 text-left justify-start h-auto min-h-[70px]"
+                      variant="ghost"
+                    >
+                      <Users className="text-orange-500 mr-4" size={22} />
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white text-sm">
+                          Gestisci Clienti
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Aggiungi/Modifica
+                        </p>
+                      </div>
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </CardContent>
           </Card>

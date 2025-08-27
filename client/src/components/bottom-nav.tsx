@@ -13,21 +13,21 @@ export function BottomNav() {
   const [location] = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 md:hidden z-30 py-3">
-      <div className="flex items-center justify-around py-2">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 md:hidden z-30 py-4">
+      <div className="flex items-center justify-around py-2 px-4">
         {navItems.map(({ path, icon: Icon, label }) => {
           const isActive = location === path;
           return (
             <Link key={path} href={path}>
               <button
                 className={cn(
-                  "flex flex-col items-center py-2 px-4 transition-colors",
+                  "flex flex-col items-center py-2 px-3 transition-colors min-w-[60px]",
                   isActive 
                     ? "text-indigo-500" 
                     : "text-gray-500 dark:text-gray-400"
                 )}
               >
-                <Icon size={20} className="mb-1" />
+                <Icon size={18} className="mb-1" />
                 <span className="text-xs">{label}</span>
               </button>
             </Link>

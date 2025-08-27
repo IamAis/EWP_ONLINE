@@ -41,12 +41,12 @@ export function Navigation() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 md:glass-effect">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
-        <div className="flex items-center justify-center md:justify-between py-4 md:py-8">
+    <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 md:glass-effect border-b border-gray-100 dark:border-gray-800 md:border-none">
+      <div className="max-w-7xl mx-auto px-3 sm:px-8 lg:px-12">
+        <div className="flex items-center justify-between py-3 md:py-8">
           <Link href="/">
-            <div className="hidden md:flex items-center space-x-5 cursor-pointer hover:opacity-80 transition-opacity">
-              <img src={Logo} alt="Logo" className="w-20 h-20 lg:w-28 lg:h-28 object-contain" />
+            <div className="flex md:flex items-center space-x-5 cursor-pointer hover:opacity-80 transition-opacity">
+              <img src={Logo} alt="Logo" className="w-12 h-12 md:w-20 md:h-20 lg:w-28 lg:h-28 object-contain" />
               {/* Titoli rimossi come richiesto */}
             </div>
           </Link>
@@ -60,13 +60,13 @@ export function Navigation() {
                   <Button
                     variant="ghost"
                     className={cn(
-                      "flex items-center space-x-4 px-8 py-4 transition-all duration-200 text-lg",
+                      "flex items-center space-x-4 px-10 py-5 transition-all duration-200 text-xl min-w-[160px] h-14",
                       isActive 
                         ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shadow-md" 
                         : "text-gray-600 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20"
                     )}
                   >
-                    <Icon size={22} />
+                    <Icon size={26} />
                     <span className="font-medium">{label}</span>
                   </Button>
                 </Link>
@@ -77,8 +77,8 @@ export function Navigation() {
               <div className="hidden md:flex items-center gap-3 ml-4">
                 <AccountDialog
                   trigger={
-                    <Button type="button" variant="outline" className="gap-2 rounded-full border-gray-300 dark:border-gray-700">
-                      <UserIcon size={16} />
+                    <Button type="button" variant="outline" className="gap-3 rounded-full border-gray-300 dark:border-gray-700 px-6 py-3 text-lg h-12">
+                      <UserIcon size={20} />
                       Profilo
                     </Button>
                   }
@@ -86,13 +86,13 @@ export function Navigation() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-full border-gray-300 dark:border-gray-700"
+                  className="rounded-full border-gray-300 dark:border-gray-700 px-6 py-3 text-lg h-12"
                   onClick={async () => {
                     await signOut();
                     toast({ title: 'Sei uscito', description: 'Logout effettuato con successo' });
                   }}
                 >
-                  <LogOut size={16} />
+                  <LogOut size={20} />
                   Esci
                 </Button>
               </div>
@@ -103,7 +103,7 @@ export function Navigation() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="rounded-full border-gray-300 dark:border-gray-700"
+                      className="rounded-full border-gray-300 dark:border-gray-700 px-6 py-3 text-lg h-12"
                     >
                       Login
                     </Button>
@@ -114,17 +114,17 @@ export function Navigation() {
           </nav>
           
           {/* Destra: azioni + autenticazione mobile */}
-          <div className="flex items-center space-x-2 md:space-x-3 md:ml-6">
+          <div className="flex items-center space-x-1 md:space-x-3 md:ml-6">
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="glass-effect hover:bg-white/20 dark:hover:bg-black/20 w-10 h-10 md:w-12 md:h-12"
+              className="glass-effect hover:bg-white/20 dark:hover:bg-black/20 w-9 h-9 md:w-12 md:h-12"
             >
               {theme === 'light' ? (
-                <Sun className="text-yellow-500" size={24} />
+                <Sun className="text-yellow-500" size={20} />
               ) : (
-                <Moon className="text-indigo-400" size={24} />
+                <Moon className="text-indigo-400" size={20} />
               )}
             </Button>
             
@@ -132,9 +132,9 @@ export function Navigation() {
               variant="ghost"
               size="icon"
               onClick={handleBackup}
-              className="glass-effect hover:bg-white/20 dark:hover:bg-black/20 w-10 h-10 md:w-12 md:h-12"
+              className="glass-effect hover:bg-white/20 dark:hover:bg-black/20 w-9 h-9 md:w-12 md:h-12"
             >
-              <CloudUpload className="text-indigo-500" size={24} />
+              <CloudUpload className="text-indigo-500" size={20} />
             </Button>
 
             {/* Autenticazione - mobile: sposta i bottoni nel top nav */}
@@ -142,13 +142,13 @@ export function Navigation() {
               <div className="md:hidden flex items-center gap-2">
                 <AccountDialog
                   trigger={
-                    <Button size="sm" className="gap-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Button size="sm" className="gap-1 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-2">
                       <UserIcon size={16} />
                       Profilo
                     </Button>
                   }
                 />
-                <Button size="sm" className="rounded-full bg-gray-800 hover:bg-gray-900 text-white" onClick={signOut}>
+                <Button size="sm" className="rounded-full bg-gray-800 hover:bg-gray-900 text-white text-xs px-3 py-2" onClick={signOut}>
                   <LogOut size={16} />
                   Esci
                 </Button>
@@ -157,7 +157,7 @@ export function Navigation() {
               <div className="md:hidden">
                 <LoginDialog
                   trigger={
-                    <Button size="sm" className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                    <Button size="sm" className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-3 py-2">
                       Login
                     </Button>
                   }

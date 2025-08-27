@@ -579,16 +579,16 @@ export default function Settings() {
             )}
 
             {/* Azioni Backup/Cloud */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Button
                 onClick={handleBackup}
-                className="h-auto p-4 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 border border-emerald-200 dark:border-emerald-700 hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-800/40 dark:hover:to-teal-800/40 text-left justify-start"
+                className="h-auto p-6 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 border border-emerald-200 dark:border-emerald-700 hover:from-emerald-100 hover:to-teal-100 dark:hover:from-emerald-800/40 dark:hover:to-teal-800/40 text-left justify-start min-h-[100px] w-full"
                 variant="ghost"
               >
                 <div className="flex items-center w-full">
-                  <Download className="text-emerald-500 mr-3" size={20} />
+                  <Download className="text-emerald-500 mr-4" size={24} />
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">
+                    <p className="font-medium text-gray-900 dark:text-white text-base">
                       Esporta Backup
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -600,13 +600,13 @@ export default function Settings() {
 
               <Button
                 onClick={() => fileInputRef.current?.click()}
-                className="h-auto p-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border border-indigo-200 dark:border-indigo-700 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-800/40 dark:hover:to-purple-800/40 text-left justify-start"
+                className="h-auto p-6 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border border-indigo-200 dark:border-indigo-700 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-800/40 dark:hover:to-purple-800/40 text-left justify-start min-h-[100px] w-full"
                 variant="ghost"
               >
                 <div className="flex items-center w-full">
-                  <Upload className="text-indigo-500 mr-3" size={20} />
+                  <Upload className="text-indigo-500 mr-4" size={24} />
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">
+                    <p className="font-medium text-gray-900 dark:text-white text-base">
                       Importa Backup
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -633,13 +633,13 @@ export default function Settings() {
                     toast({ title: 'Errore', description: 'Impossibile caricare in cloud', variant: 'destructive' });
                   }
                 }}
-                className="h-auto p-4 text-left justify-start rounded-xl relative bg-sky-100 dark:bg-sky-900/30 border-2 border-yellow-500 hover:bg-sky-200 dark:hover:bg-sky-800/40 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                className="h-auto p-6 text-left justify-start rounded-xl relative bg-sky-100 dark:bg-sky-900/30 border-2 border-yellow-500 hover:bg-sky-200 dark:hover:bg-sky-800/40 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 min-h-[100px] w-full"
                 variant="ghost"
               >
                 <div className="flex items-center w-full">
-                  <Upload className="text-sky-700 dark:text-sky-300 mr-3" size={20} />
+                  <Upload className="text-sky-700 dark:text-sky-300 mr-4" size={24} />
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                    <p className="font-semibold text-gray-900 dark:text-white text-base">
                       Carica in Cloud
                     </p>
                     <p className="text-xs text-gray-700 dark:text-gray-300">
@@ -667,13 +667,13 @@ export default function Settings() {
                     toast({ title: 'Errore', description: 'Impossibile caricare dal cloud', variant: 'destructive' });
                   }
                 }}
-                className="h-auto p-4 text-left justify-start rounded-xl relative bg-sky-100 dark:bg-sky-900/30 border-2 border-yellow-500 hover:bg-sky-200 dark:hover:bg-sky-800/40 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                className="h-auto p-6 text-left justify-start rounded-xl relative bg-sky-100 dark:bg-sky-900/30 border-2 border-yellow-500 hover:bg-sky-200 dark:hover:bg-sky-800/40 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 min-h-[100px] w-full"
                 variant="ghost"
               >
                 <div className="flex items-center w-full">
-                  <Download className="text-sky-700 dark:text-sky-300 mr-3" size={20} />
+                  <Download className="text-sky-700 dark:text-sky-300 mr-4" size={24} />
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-white text-sm">
+                    <p className="font-semibold text-gray-900 dark:text-white text-base">
                       Carica dal Cloud
                     </p>
                     <p className="text-xs text-gray-700 dark:text-gray-300">
@@ -685,13 +685,13 @@ export default function Settings() {
 
               <Button
                 onClick={handleClearData}
-                className="h-auto p-4 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/30 dark:to-pink-900/30 border border-red-200 dark:border-red-700 hover:from-red-100 hover:to-pink-100 dark:hover:from-red-800/40 dark:hover:to-pink-800/40 text-left justify-start"
+                className="h-auto p-6 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/30 dark:to-pink-900/30 border border-red-200 dark:border-red-700 hover:from-red-100 hover:to-pink-100 dark:hover:from-red-800/40 dark:hover:to-pink-800/40 text-left justify-start min-h-[100px] w-full"
                 variant="ghost"
               >
                 <div className="flex items-center w-full">
-                  <Trash2 className="text-red-500 mr-3" size={20} />
+                  <Trash2 className="text-red-500 mr-4" size={24} />
                   <div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">
+                    <p className="font-medium text-gray-900 dark:text-white text-base">
                       Cancella Tutto
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
