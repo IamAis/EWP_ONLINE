@@ -677,7 +677,7 @@ export default function Settings() {
                       Carica dal Cloud
                     </p>
                     <p className="text-xs text-gray-700 dark:text-gray-300">
-                      Sostituisci dati locali con quelli del cloud
+                      Importa i dati remoti
                     </p>
                   </div>
                 </div>

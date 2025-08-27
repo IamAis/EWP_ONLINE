@@ -155,7 +155,7 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
       </div>
 
       {/* Days */}
-      <div className="space-y-12">
+      <div className="space-y-8 md:space-y-12">
         {(localWeek.days || []).map((day, dayIndex) => (
           <div key={day.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white/40 dark:bg-gray-900/20">
             <div className="flex items-center justify-between mb-3">
@@ -197,14 +197,90 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
             )}
 
             {/* Exercises for this day */}
-            <div className="space-y-2">
+            <div className="space-y-3 md:space-y-2">
               {(day.exercises || []).map((exercise) => (
                 <div 
                   key={exercise.id} 
-                  className="flex items-start space-x-2 p-2 bg-white/40 dark:bg-gray-700/40 rounded-lg animate-fade-in"
+                  className="flex flex-col md:flex-row md:items-start space-y-2 md:space-y-0 md:space-x-2 p-3 md:p-2 bg-white/40 dark:bg-gray-700/40 rounded-lg animate-fade-in"
                 >
-                  {/* Image upload */}
-                  <div className="relative flex-shrink-0">
+
+                  {/* Mobile-first layout with image and exercise fields */}
+                  <div className="flex md:flex-1 md:items-start space-x-2">
+                    {/* Image upload */}
+                    <div className="relative flex-shrink-0 md:hidden">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            handleImageUpload(day.id, exercise.id, file);
+                          }
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      />
+                      <div className="w-12 h-12 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 rounded-lg flex items-center justify-center cursor-pointer hover:opacity-75 transition-opacity">
+                        {exercise.imageUrl ? (
+                          <img 
+                            src={exercise.imageUrl} 
+                            alt="Exercise" 
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        ) : (
+                          <Image className="text-gray-500 dark:text-gray-400" size={16} />
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Exercise fields - Responsive layout */}
+                    <div className="flex-1 space-y-2 md:space-y-0 md:grid md:grid-cols-5 md:gap-1">
+                      {/* Exercise name - full width on mobile */}
+                      <div className="md:col-span-1">
+                        <Input
+                          placeholder="Esercizio"
+                          value={exercise.name}
+                          onChange={(e) => updateExercise(day.id, exercise.id, 'name', e.target.value)}
+                          className="text-sm md:text-xs bg-white/50 dark:bg-gray-800/50 w-full touch-manipulation min-h-[44px] md:min-h-[32px]"
+                          style={{ WebkitAppearance: 'none' }}
+                        />
+                      </div>
+                      
+                      {/* Series, Reps, Load, Rest - 2x2 grid on mobile, single row on desktop */}
+                      <div className="grid grid-cols-2 gap-2 md:contents">
+                        <Input
+                          placeholder="Serie"
+                          value={exercise.sets}
+                          onChange={(e) => updateExercise(day.id, exercise.id, 'sets', e.target.value)}
+                          className="text-sm md:text-xs bg-white/50 dark:bg-gray-800/50 touch-manipulation min-h-[44px] md:min-h-[32px]"
+                          style={{ WebkitAppearance: 'none' }}
+                        />
+                        <Input
+                          placeholder="Reps"
+                          value={exercise.reps}
+                          onChange={(e) => updateExercise(day.id, exercise.id, 'reps', e.target.value)}
+                          className="text-sm md:text-xs bg-white/50 dark:bg-gray-800/50 touch-manipulation min-h-[44px] md:min-h-[32px]"
+                          style={{ WebkitAppearance: 'none' }}
+                        />
+                        <Input
+                          placeholder="Carico"
+                          value={exercise.load || ''}
+                          onChange={(e) => updateExercise(day.id, exercise.id, 'load', e.target.value)}
+                          className="text-sm md:text-xs bg-white/50 dark:bg-gray-800/50 touch-manipulation min-h-[44px] md:min-h-[32px]"
+                          style={{ WebkitAppearance: 'none' }}
+                        />
+                        <Input
+                          placeholder="Recupero"
+                          value={exercise.rest || ''}
+                          onChange={(e) => updateExercise(day.id, exercise.id, 'rest', e.target.value)}
+                          className="text-sm md:text-xs bg-white/50 dark:bg-gray-800/50 touch-manipulation min-h-[44px] md:min-h-[32px]"
+                          style={{ WebkitAppearance: 'none' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Desktop image upload */}
+                  <div className="hidden md:block relative flex-shrink-0">
                     <input
                       type="file"
                       accept="image/*"
@@ -229,48 +305,18 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
                     </div>
                   </div>
 
-                  {/* Exercise fields */}
-                  <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-1">
-                    <Input
-                      placeholder="Esercizio"
-                      value={exercise.name}
-                      onChange={(e) => updateExercise(day.id, exercise.id, 'name', e.target.value)}
-                      className="text-xs bg-white/50 dark:bg-gray-800/50 col-span-2 md:col-span-1"
-                    />
-                    <Input
-                      placeholder="Serie"
-                      value={exercise.sets}
-                      onChange={(e) => updateExercise(day.id, exercise.id, 'sets', e.target.value)}
-                      className="text-xs bg-white/50 dark:bg-gray-800/50"
-                    />
-                    <Input
-                      placeholder="Reps"
-                      value={exercise.reps}
-                      onChange={(e) => updateExercise(day.id, exercise.id, 'reps', e.target.value)}
-                      className="text-xs bg-white/50 dark:bg-gray-800/50"
-                    />
-                    <Input
-                      placeholder="Carico"
-                      value={exercise.load || ''}
-                      onChange={(e) => updateExercise(day.id, exercise.id, 'load', e.target.value)}
-                      className="text-xs bg-white/50 dark:bg-gray-800/50"
-                    />
-                    <Input
-                      placeholder="Recupero"
-                      value={exercise.rest || ''}
-                      onChange={(e) => updateExercise(day.id, exercise.id, 'rest', e.target.value)}
-                      className="text-xs bg-white/50 dark:bg-gray-800/50"
-                    />
+                  {/* Remove button - full width on mobile */}
+                  <div className="md:flex-shrink-0">
+                    <Button 
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => removeExercise(day.id, exercise.id)}
+                      className="w-full md:w-auto p-2 md:p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 min-h-[44px] md:min-h-[32px]"
+                    >
+                      <Minus size={16} className="md:w-3 md:h-3" />
+                      <span className="ml-1 md:hidden text-sm">Rimuovi</span>
+                    </Button>
                   </div>
-
-                  <Button 
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => removeExercise(day.id, exercise.id)}
-                    className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 flex-shrink-0"
-                  >
-                    <Minus size={12} />
-                  </Button>
                 </div>
               ))}
             </div>

@@ -206,175 +206,132 @@ export class PDFGenerator {
   }
 
   private addWeeklyProgression(workout: Workout, yPosition: number, lineColor?: string, textColor?: string): number {
-    this.doc.setFont('helvetica', 'bold');
-    this.doc.setFontSize(14);
-    const titleRgb = this.hexToRgb(textColor || '#4F46E5');
-    this.doc.setTextColor(titleRgb.r, titleRgb.g, titleRgb.b);
-    this.doc.text('PROGRESSIONE SETTIMANALE', this.margin, yPosition);
-    yPosition += 10;
+  this.doc.setFont('helvetica', 'bold');
+  this.doc.setFontSize(14);
+  const titleRgb = this.hexToRgb(textColor || '#4F46E5');
+  this.doc.setTextColor(titleRgb.r, titleRgb.g, titleRgb.b);
+  this.doc.text('PROGRESSIONE SETTIMANALE', this.margin, yPosition);
+  yPosition += 10;
 
-    for (const week of workout.weeks) {
-      // Check if we need a new page
-      if (yPosition > this.pageHeight - 80) {
+  for (const week of workout.weeks) {
+    if (yPosition > this.pageHeight - 80) {
+      this.doc.addPage();
+      yPosition = this.margin;
+    }
+
+    // Titolo settimana
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setFontSize(12);
+    this.doc.setTextColor(0, 0, 0);
+    const weekName = (week.name || `SETTIMANA ${week.number}`).toUpperCase();
+    this.doc.text(weekName, this.margin, yPosition);
+    yPosition += 8;
+
+    // Note settimana
+    if (week.notes) {
+      this.doc.setFont('helvetica', 'italic');
+      this.doc.setFontSize(9);
+      const noteLines = this.doc.splitTextToSize(week.notes, this.pageWidth - 2 * this.margin);
+      this.doc.text(noteLines, this.margin, yPosition);
+      yPosition += noteLines.length * 4;
+    }
+
+    // Giorni della settimana
+    for (const day of week.days) {
+      if (yPosition > this.pageHeight - 60) {
         this.doc.addPage();
         yPosition = this.margin;
       }
 
-      // Week header - usa il nome customizzabile se presente
+      // Titolo giorno
       this.doc.setFont('helvetica', 'bold');
-      this.doc.setFontSize(12);
-      this.doc.setTextColor(0, 0, 0);
-      const weekName = (week.name || `SETTIMANA ${week.number}`).toUpperCase();
-      const weekLines = this.doc.splitTextToSize(weekName, this.pageWidth - 2 * this.margin);
-      this.doc.text(weekLines, this.margin, yPosition);
-      yPosition += weekLines.length * 6;
+      this.doc.setFontSize(11);
+      const dayTitleRgb = this.hexToRgb(textColor || '#4F46E5');
+      this.doc.setTextColor(dayTitleRgb.r, dayTitleRgb.g, dayTitleRgb.b);
+      this.doc.text(day.name || 'GIORNO', this.margin + 5, yPosition);
+      yPosition += 7;
 
-      // Week notes
-      if (week.notes) {
+      // Note giorno
+      if (day.notes) {
         this.doc.setFont('helvetica', 'italic');
-        this.doc.setFontSize(9);
-        const noteLines = this.doc.splitTextToSize(week.notes, this.pageWidth - 2 * this.margin);
-        this.doc.text(noteLines, this.margin, yPosition);
-        yPosition += noteLines.length * 4;
+        this.doc.setFontSize(8);
+        const dayNoteLines = this.doc.splitTextToSize(day.notes, this.pageWidth - 2 * this.margin);
+        this.doc.text(dayNoteLines, this.margin + 10, yPosition);
+        yPosition += dayNoteLines.length * 3;
       }
 
-      // Process each day in the week
-      for (const day of week.days) {
-        if (yPosition > this.pageHeight - 60) {
-          this.doc.addPage();
-          yPosition = this.margin;
-        }
+      if (day.exercises.length > 0) {
+        // Imposto dimensioni tabella
+        const colWidths = [65, 20, 20, 25, 30];
+        const headers = ['ESERCIZIO', 'SERIE', 'REPS', 'CARICO', 'RECUPERO'];
+        const startX = this.margin + 5;
+        let rowY = yPosition;
 
-        // Day header
+        // Header tabella
         this.doc.setFont('helvetica', 'bold');
-        this.doc.setFontSize(11);
-        const dayTitleRgb = this.hexToRgb(textColor || '#4F46E5');
-        this.doc.setTextColor(dayTitleRgb.r, dayTitleRgb.g, dayTitleRgb.b);
-        const dayLines = this.doc.splitTextToSize(day.name || '', this.pageWidth - 2 * this.margin - 10);
-        this.doc.text(dayLines, this.margin + 5, yPosition);
-        yPosition += dayLines.length * 6;
+        this.doc.setFontSize(8);
+        this.doc.setTextColor(0, 0, 0);
 
-        // Day notes
-        if (day.notes) {
-          this.doc.setFont('helvetica', 'italic');
-          this.doc.setFontSize(8);
-          const dayNoteLines = this.doc.splitTextToSize(day.notes, this.pageWidth - 2 * this.margin - 10);
-          this.doc.text(dayNoteLines, this.margin + 10, yPosition);
-          yPosition += dayNoteLines.length * 3;
-        }
+        let x = startX;
+        headers.forEach((h, i) => {
+          this.doc.setLineWidth(0.5); // più spesso (0.2 default, 0.5 medio, 1 molto spesso)
+          this.doc.text(h, x + 2, rowY + 4);
+          this.doc.rect(x, rowY, colWidths[i], 6);
+          x += colWidths[i];
+        });
+        rowY += 6;
 
-        if (day.exercises.length > 0) {
-          // Exercise table headers
-          this.doc.setFont('helvetica', 'bold');
-          this.doc.setFontSize(8);
-          this.doc.setTextColor(0, 0, 0);
-          this.doc.text('ESERCIZIO', this.margin + 10, yPosition);
-          this.doc.text('SERIE', this.margin + 70, yPosition);
-          this.doc.text('REPS', this.margin + 95, yPosition);
-          this.doc.text('CARICO', this.margin + 120, yPosition);
-          this.doc.text('RECUPERO', this.margin + 150, yPosition);
-          yPosition += 5;
+        // Righe esercizi
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.setFontSize(8);
 
-          // Line under headers with custom color
-          if (lineColor) {
-            const rgb = this.hexToRgb(lineColor);
-            this.doc.setDrawColor(rgb.r, rgb.g, rgb.b);
-          } else {
-            this.doc.setDrawColor(200, 200, 200);
+        for (const exercise of day.exercises) {
+          // Controllo spazio pagina
+          if (rowY > this.pageHeight - 40) {
+            this.doc.addPage();
+            rowY = this.margin;
           }
-          this.doc.setLineWidth(0.3);
-          this.doc.line(this.margin + 10, yPosition, this.pageWidth - this.margin - 10, yPosition);
-          yPosition += 3;
 
-          // Exercises
-          this.doc.setFont('helvetica', 'normal');
-          for (const exercise of day.exercises) {
-            if (yPosition > this.pageHeight - 30) {
-              this.doc.addPage();
-              yPosition = this.margin;
-            }
+          const rowValues = [
+            exercise.name || '',
+            exercise.sets || '',
+            exercise.reps || '',
+            exercise.load || '',
+            exercise.rest || ''
+          ];
 
-            // Add exercise image if present
-            if (exercise.imageUrl) {
-              try {
-                // Add image to PDF (small thumbnail)
-                this.doc.addImage(exercise.imageUrl, 'JPEG', this.margin + 5, yPosition - 3, 8, 8);
-              } catch (error) {
-                console.warn('Could not add exercise image to PDF:', error);
-              }
-            }
+          x = startX;
+          rowValues.forEach((val, i) => {
+            const wrapped = this.doc.splitTextToSize(val, colWidths[i] - 4);
+            this.doc.text(wrapped, x + 2, rowY + 4);
+            this.doc.rect(x, rowY, colWidths[i], 8);
+            x += colWidths[i];
+          });
 
-            // Exercise data con wrapping e altezza riga dinamica
-            const nameX = this.margin + (exercise.imageUrl ? 18 : 10);
-            const setsX = this.margin + 70;
-            const repsX = this.margin + 95;
-            const loadX = this.margin + 120;
-            const restX = this.margin + 150;
-            const rowRightX = this.pageWidth - this.margin - 10;
+          rowY += 8;
 
-            const nameMax = Math.max(0, setsX - nameX - 2);
-            const setsMax = Math.max(0, repsX - setsX - 2);
-            const repsMax = Math.max(0, loadX - repsX - 2);
-            const loadMax = Math.max(0, restX - loadX - 2);
-            const restMax = Math.max(0, rowRightX - restX);
-
-            const nameLines = this.doc.splitTextToSize(exercise.name || '', nameMax);
-            const setsLines = this.doc.splitTextToSize(exercise.sets || '', setsMax);
-            const repsLines = this.doc.splitTextToSize(exercise.reps || '', repsMax);
-            const loadLines = this.doc.splitTextToSize(exercise.load || '', loadMax);
-            const restLines = this.doc.splitTextToSize(exercise.rest || '', restMax);
-
-            const lineHeight = 3.2; // per font size 8
-            const rowLines = Math.max(nameLines.length, setsLines.length, repsLines.length, loadLines.length, restLines.length);
-            const rowHeight = rowLines * lineHeight;
-
-            // Nuova pagina se la riga non ci sta
-            if (yPosition + rowHeight > this.pageHeight - 30) {
-              this.doc.addPage();
-              yPosition = this.margin;
-            }
-
-            this.doc.text(nameLines, nameX, yPosition);
-            this.doc.text(setsLines, setsX, yPosition);
-            this.doc.text(repsLines, repsX, yPosition);
-            this.doc.text(loadLines, loadX, yPosition);
-            this.doc.text(restLines, restX, yPosition);
-            yPosition += rowHeight + 2;
-
-            // Exercise notes
-            if (exercise.notes) {
-              this.doc.setFont('helvetica', 'italic');
-              this.doc.setFontSize(7);
-              const noteLines = this.doc.splitTextToSize(`Note: ${exercise.notes}`, this.pageWidth - 2 * this.margin - 20);
-              this.doc.text(noteLines, this.margin + 15, yPosition);
-              yPosition += noteLines.length * 3;
-              this.doc.setFont('helvetica', 'normal');
-              this.doc.setFontSize(8);
-            }
+          // Note esercizio sotto la riga
+          if (exercise.notes) {
+            const noteLines = this.doc.splitTextToSize(`Note: ${exercise.notes}`, this.pageWidth - 2 * this.margin);
+            this.doc.setFont('helvetica', 'italic');
+            this.doc.setFontSize(7);
+            this.doc.text(noteLines, startX, rowY + 3);
+            rowY += noteLines.length * 3 + 2;
+            this.doc.setFont('helvetica', 'normal');
+            this.doc.setFontSize(8);
           }
         }
-        
-        // Line at the bottom of the day block (uguale a quella sotto le intestazioni)
-        if (yPosition > this.pageHeight - this.margin) {
-          this.doc.addPage();
-          yPosition = this.margin;
-        }
-        if (lineColor) {
-          const rgb2 = this.hexToRgb(lineColor);
-          this.doc.setDrawColor(rgb2.r, rgb2.g, rgb2.b);
-        } else {
-          this.doc.setDrawColor(200, 200, 200);
-        }
-        this.doc.setLineWidth(0.3);
-        this.doc.line(this.margin + 10, yPosition, this.pageWidth - this.margin - 10, yPosition);
-        yPosition += 3;
+
+        yPosition = rowY + 10;
       }
-
-      yPosition += 5; // Space after each week
     }
 
-    return yPosition;
+    yPosition += 5; // Spazio dopo ogni settimana
   }
+
+  return yPosition;
+}
+
 
   private addDietaryAdvice(advice: string, yPosition: number, lineColor?: string, textColor?: string): number {
     if (yPosition > this.pageHeight - 60) {
