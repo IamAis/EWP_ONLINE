@@ -103,7 +103,7 @@
   }
 
   /* Mobile scrolling improvements */
-  .touch-manipulation {
+  .touch-manipulation, .touch-action-manipulation {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }

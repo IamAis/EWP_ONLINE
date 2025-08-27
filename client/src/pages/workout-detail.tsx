@@ -206,22 +206,22 @@ export default function WorkoutDetail() {
                 <Button 
                   onClick={handleSave} 
                   disabled={updateWorkout.isPending} 
-                  className="w-full bg-emerald-500 hover:bg-emerald-600"
+                  className="w-full bg-emerald-500 hover:bg-emerald-600 touch-action-manipulation"
                 >
                   <Save size={16} className="mr-2" />
                   Salva Modifiche
                 </Button>
-                <Button onClick={handleCancel} variant="outline" className="w-full">
+                <Button onClick={handleCancel} variant="outline" className="w-full touch-action-manipulation">
                   Annulla
                 </Button>
               </>
             ) : (
               <>
-                <Button onClick={handleEdit} className="w-full bg-indigo-500 hover:bg-indigo-600">
+                <Button onClick={handleEdit} className="w-full bg-indigo-500 hover:bg-indigo-600 touch-action-manipulation">
                   <Edit size={16} className="mr-2" />
                   Modifica Scheda
                 </Button>
-                <Button onClick={handleExportPDF} className="w-full bg-orange-500 hover:bg-orange-600">
+                <Button onClick={handleExportPDF} className="w-full bg-orange-500 hover:bg-orange-600 touch-action-manipulation">
                   <FileText size={16} className="mr-2" />
                   Esporta PDF
                 </Button>
@@ -245,7 +245,7 @@ export default function WorkoutDetail() {
               <Input
                 value={currentWorkout.coachName}
                 onChange={(e) => setEditedWorkout({ ...currentWorkout, coachName: e.target.value })}
-                className="glass-effect bg-white/50 dark:bg-gray-800/50"
+                className="glass-effect bg-white/50 dark:bg-gray-800/50 touch-action-manipulation min-h-[44px] md:min-h-0"
               />
             ) : (
               <p className="text-gray-900 dark:text-white">{currentWorkout.coachName}</p>
@@ -260,7 +260,7 @@ export default function WorkoutDetail() {
               <Input
                 value={currentWorkout.workoutType}
                 onChange={(e) => setEditedWorkout({ ...currentWorkout, workoutType: e.target.value })}
-                className="glass-effect bg-white/50 dark:bg-gray-800/50"
+                className="glass-effect bg-white/50 dark:bg-gray-800/50 touch-action-manipulation min-h-[44px] md:min-h-0"
               />
             ) : (
               <p className="text-gray-900 dark:text-white">{currentWorkout.workoutType}</p>
@@ -276,7 +276,7 @@ export default function WorkoutDetail() {
                 value={currentWorkout.description || ''}
                 onChange={(e) => setEditedWorkout({ ...currentWorkout, description: e.target.value })}
                 rows={3}
-                className="glass-effect bg-white/50 dark:bg-gray-800/50"
+                className="glass-effect bg-white/50 dark:bg-gray-800/50 touch-action-manipulation text-base"
               />
             ) : (
               <p className="text-gray-900 dark:text-white">{currentWorkout.description || 'Nessuna descrizione'}</p>
@@ -364,7 +364,7 @@ export default function WorkoutDetail() {
                           {/* Mobile Card View */}
                           <div className="md:hidden space-y-3">
                             {(day.exercises || []).map((exercise) => (
-                              <div key={exercise.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 space-y-2">
+                              <div key={exercise.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 space-y-2 touch-action-manipulation">
                                 <div className="flex items-center space-x-2">
                                   {exercise.imageUrl && (
                                     <img 
@@ -375,26 +375,26 @@ export default function WorkoutDetail() {
                                   )}
                                   <h5 className="font-medium text-gray-900 dark:text-white text-sm">{exercise.name}</h5>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 text-xs">
-                                  <div>
+                                <div className="grid grid-cols-2 gap-2 text-xs touch-action-manipulation">
+                                  <div className="touch-action-manipulation">
                                     <span className="font-medium text-gray-600 dark:text-gray-400">Serie:</span>
                                     <span className="ml-1 text-gray-900 dark:text-white">{exercise.sets}</span>
                                   </div>
-                                  <div>
+                                  <div className="touch-action-manipulation">
                                     <span className="font-medium text-gray-600 dark:text-gray-400">Reps:</span>
                                     <span className="ml-1 text-gray-900 dark:text-white">{exercise.reps}</span>
                                   </div>
-                                  <div>
+                                  <div className="touch-action-manipulation">
                                     <span className="font-medium text-gray-600 dark:text-gray-400">Carico:</span>
                                     <span className="ml-1 text-gray-900 dark:text-white">{exercise.load || '-'}</span>
                                   </div>
-                                  <div>
+                                  <div className="touch-action-manipulation">
                                     <span className="font-medium text-gray-600 dark:text-gray-400">Recupero:</span>
                                     <span className="ml-1 text-gray-900 dark:text-white">{exercise.rest || '-'}</span>
                                   </div>
                                 </div>
                                 {exercise.notes && (
-                                  <div className="pt-1 border-t border-gray-200 dark:border-gray-600">
+                                  <div className="pt-1 border-t border-gray-200 dark:border-gray-600 touch-action-manipulation">
                                     <p className="text-xs text-gray-600 dark:text-gray-400">{exercise.notes}</p>
                                   </div>
                                 )}
@@ -428,7 +428,7 @@ export default function WorkoutDetail() {
                 value={currentWorkout.dietaryAdvice}
                 onChange={(e) => setEditedWorkout({ ...currentWorkout, dietaryAdvice: e.target.value })}
                 rows={4}
-                className="glass-effect bg-white/50 dark:bg-gray-800/50"
+                className="glass-effect bg-white/50 dark:bg-gray-800/50 touch-action-manipulation text-base"
               />
             ) : (
               <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
