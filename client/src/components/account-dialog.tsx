@@ -175,7 +175,7 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{trigger}</DialogTrigger>
-			<DialogContent>
+			<DialogContent className="max-w-md mx-auto max-h-[90vh] overflow-y-auto">
 				<DialogHeader>
 					<DialogTitle>Il tuo profilo</DialogTitle>
 					<DialogDescription>
@@ -183,7 +183,7 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 					</DialogDescription>
 				</DialogHeader>
 
-				<form onSubmit={onSaveProfile} className="space-y-4">
+				<form onSubmit={onSaveProfile} className="space-y-3">
 					<div className="space-y-2">
 						<Label htmlFor="name">Nome</Label>
 						<Input
@@ -199,9 +199,9 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 					</DialogFooter>
 				</form>
 
-				<hr className="my-4 border-gray-200 dark:border-gray-800" />
+				<hr className="my-3 border-gray-200 dark:border-gray-800" />
 
-				<form onSubmit={onChangeEmail} className="space-y-4">
+				<form onSubmit={onChangeEmail} className="space-y-3">
 					<div className="space-y-2">
 						<Label htmlFor="email">Email</Label>
 						<Input
@@ -217,7 +217,7 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 							value={confirmEmail}
 							onChange={(e) => setConfirmEmail(e.target.value)}
 						/>
-						<p className="text-sm text-gray-500">
+						<p className="text-xs text-gray-500">
 							Riceverai un'email di verifica per confermare il cambio.
 						</p>
 					</div>
@@ -235,7 +235,7 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 				<hr className="my-4 border-gray-200 dark:border-gray-800" />
 				
 				<form onSubmit={onChangePassword} className="space-y-3">
-					<p className="text-sm text-gray-500 dark:text-gray-400">
+					<p className="text-xs text-gray-500 dark:text-gray-400">
 						Riceverai un'email con le istruzioni per reimpostare la password.
 					</p>
 					<DialogFooter>
