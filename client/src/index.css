@@ -108,6 +108,16 @@
     -webkit-tap-highlight-color: transparent;
   }
   
+  /* Enable pan-x and pan-y for all components */
+  * {
+    touch-action: pan-x pan-y;
+  }
+  
+  /* Override for specific interactive elements */
+  button, a, input, textarea, select, .interactive {
+    touch-action: manipulation;
+  }
+  
   /* Smooth scrolling for mobile */
   html {
     -webkit-overflow-scrolling: touch;
