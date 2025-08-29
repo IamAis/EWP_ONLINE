@@ -10,6 +10,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useClients, useCreateClient, useUpdateClient, useDeleteClient } from '@/hooks/use-clients';
 import { useToast } from '@/hooks/use-toast';
+import { usePremium } from '@/hooks/use-premium';
+import { PremiumDialog } from '@/components/premium-dialog';
 import { insertClientSchema, type InsertClient, type Client } from '@shared/schema';
 
 export default function Clients() {
@@ -17,11 +19,13 @@ export default function Clients() {
   const [searchTerm, setSearchTerm] = useState('');
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
   const deleteClient = useDeleteClient();
   const { toast } = useToast();
+  const { canAccess } = usePremium();
 
   const form = useForm<InsertClient>({
     resolver: zodResolver(insertClientSchema),
@@ -41,23 +45,30 @@ export default function Clients() {
 
   const handleSubmit = async (data: InsertClient) => {
     try {
-      if (editingClient) {
-        await updateClient.mutateAsync({ id: editingClient.id, updates: data });
-        toast({
-          title: "Cliente aggiornato",
-          description: "Le informazioni del cliente sono state aggiornate"
-        });
+      // Se stiamo modificando un cliente esistente o se l'utente può creare un nuovo cliente
+      if (editingClient || canAccess('clients', clients.length)) {
+        if (editingClient) {
+          await updateClient.mutateAsync({ id: editingClient.id, updates: data });
+          toast({
+            title: "Cliente aggiornato",
+            description: "Le informazioni del cliente sono state aggiornate"
+          });
+        } else {
+          await createClient.mutateAsync(data);
+          toast({
+            title: "Cliente creato",
+            description: "Il nuovo cliente è stato aggiunto"
+          });
+        }
+        
+        setIsDialogOpen(false);
+        setEditingClient(null);
+        form.reset();
       } else {
-        await createClient.mutateAsync(data);
-        toast({
-          title: "Cliente creato",
-          description: "Il nuovo cliente è stato aggiunto"
-        });
+        // Se l'utente non può creare un nuovo cliente, mostra il popup premium
+        setIsDialogOpen(false);
+        setShowPremiumDialog(true);
       }
-      
-      setIsDialogOpen(false);
-      setEditingClient(null);
-      form.reset();
     } catch (error) {
       toast({
         title: "Errore",
@@ -97,8 +108,25 @@ export default function Clients() {
   };
 
   const openCreateDialog = () => {
-    setEditingClient(null);
-    form.reset();
+    // Verifica se l'utente può creare un nuovo cliente
+    if (canAccess('clients', clients.length)) {
+      setEditingClient(null);
+      form.reset();
+      setIsDialogOpen(true);
+    } else {
+      // Mostra il popup premium
+      setShowPremiumDialog(true);
+    }
+  };
+  
+  const openEditDialog = (client: Client) => {
+    setEditingClient(client);
+    form.reset({
+      name: client.name,
+      email: client.email || '',
+      phone: client.phone || '',
+      notes: client.notes || ''
+    });
     setIsDialogOpen(true);
   };
 
@@ -119,6 +147,12 @@ export default function Clients() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-mobile-nav">
+      {/* Premium Dialog */}
+      <PremiumDialog 
+        open={showPremiumDialog} 
+        onOpenChange={setShowPremiumDialog} 
+        feature="clients" 
+      />
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">

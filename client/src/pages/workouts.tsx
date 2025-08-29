@@ -8,6 +8,8 @@ import { WorkoutCard } from '@/components/workout-card';
 import { WorkoutBuilder } from '@/components/workout-builder';
 import { useWorkouts, useCreateWorkout } from '@/hooks/use-workouts';
 import { useToast } from '@/hooks/use-toast';
+import { usePremium } from '@/hooks/use-premium';
+import { PremiumDialog } from '@/components/premium-dialog';
 import { workoutTypes, type Workout } from '@shared/schema';
 
 export default function Workouts() {
@@ -16,8 +18,10 @@ export default function Workouts() {
   const [filterType, setFilterType] = useState<string>('all');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingWorkout, setEditingWorkout] = useState<Workout | null>(null);
+  const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   const createWorkout = useCreateWorkout();
   const { toast } = useToast();
+  const { canAccess } = usePremium();
 
   const filteredWorkouts = workouts.filter(workout => {
     const matchesSearch = 
@@ -75,6 +79,16 @@ export default function Workouts() {
     setEditingWorkout(null);
   };
 
+  const handleCreateWorkout = () => {
+    // Verifica se l'utente può creare una nuova scheda
+    if (canAccess('workouts', workouts.length)) {
+      setShowCreateDialog(true);
+    } else {
+      // Mostra il popup premium
+      setShowPremiumDialog(true);
+    }
+  };
+
   if (isLoading) {
     return (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-mobile-nav">
@@ -102,12 +116,13 @@ export default function Workouts() {
           </p>
         </div>
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity h-12 px-6 text-lg font-semibold">
-              <Plus className="mr-2" size={18} />
-              Nuova Scheda
-            </Button>
-          </DialogTrigger>
+          <Button 
+            className="bg-gradient-primary hover:opacity-90 transition-opacity h-12 px-6 text-lg font-semibold"
+            onClick={handleCreateWorkout}
+          >
+            <Plus className="mr-2" size={18} />
+            Nuova Scheda
+          </Button>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Crea Nuova Scheda</DialogTitle>
@@ -116,6 +131,13 @@ export default function Workouts() {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Premium Dialog */}
+      <PremiumDialog 
+        open={showPremiumDialog} 
+        onOpenChange={setShowPremiumDialog} 
+        feature="workouts" 
+      />
 
       {/* Edit Dialog */}
       {editingWorkout && (
@@ -188,7 +210,7 @@ export default function Workouts() {
           </p>
           <Button
             className="bg-gradient-primary hover:opacity-90 transition-opacity"
-            onClick={() => setShowCreateDialog(true)}
+            onClick={handleCreateWorkout}
           >
             <Plus className="mr-2" size={16} />
             Crea Nuova Scheda

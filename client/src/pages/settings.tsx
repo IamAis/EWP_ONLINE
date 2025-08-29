@@ -15,6 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { insertCoachProfileSchema, type InsertCoachProfile } from '@shared/schema';
 import { useRef } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { usePremium } from '@/hooks/use-premium';
+import { PremiumDialog } from '@/components/premium-dialog';
 import { processImageForUpload } from '@/lib/image-utils';
 
 export default function Settings() {
@@ -23,6 +25,8 @@ export default function Settings() {
   const updateCoachProfile = useUpdateCoachProfile();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { canAccess } = usePremium();
+  const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [backupStats, setBackupStats] = useState<{
@@ -77,6 +81,11 @@ export default function Settings() {
   }, []);
 
   const handleSaveProfile = async (data: InsertCoachProfile) => {
+    // Verifica se l'utente può modificare le impostazioni Coach
+    if (!canAccess('coach-settings')) {
+      setShowPremiumDialog(true);
+      return;
+    }
     try {
       if (coachProfile) {
         // Aggiorna direttamente nel database locale
@@ -197,7 +206,13 @@ export default function Settings() {
   };
 
   return (
-    <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-mobile-nav">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-mobile-nav">
+      {/* Premium Dialog */}
+      <PremiumDialog 
+        open={showPremiumDialog} 
+        onOpenChange={setShowPremiumDialog} 
+        feature="coach-settings" 
+      />
       <div className="mb-8 md:mb-12">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
           Impostazioni
@@ -619,10 +634,12 @@ export default function Settings() {
               {/* Carica in Cloud (sovrascrive) */}
               <Button
                 onClick={async () => {
-                  if (!user) {
-                    toast({ title: 'Serve un account', description: 'Crea o accedi per usare il cloud', variant: 'destructive' });
+                  // Verifica se l'utente può accedere alla funzionalità premium
+                  if (!canAccess('coach-settings')) {
+                    setShowPremiumDialog(true);
                     return;
                   }
+                  
                   if (!window.confirm('Il backup remoto verrà reimpiazzato con i dati attuali, è consigliato prima caricare i dati dal cloud. Procedere?')) return;
                   try {
                     await BackupManager.exportToSupabaseStorage();
@@ -652,10 +669,12 @@ export default function Settings() {
               {/* Carica dal Cloud (sostituisce) */}
               <Button
                 onClick={async () => {
-                  if (!user) {
-                    toast({ title: 'Serve un account', description: 'Crea un account o accedi per usare il cloud', variant: 'destructive' });
+                  // Verifica se l'utente può accedere alla funzionalità premium
+                  if (!canAccess('coach-settings')) {
+                    setShowPremiumDialog(true);
                     return;
                   }
+                  
                   if (!window.confirm('I dati locali verranno completamente sostituiti con quelli dal cloud. Procedere?')) return;
                   try {
                     await BackupManager.mergeFromSupabaseStorage();
