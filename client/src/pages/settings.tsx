@@ -569,7 +569,7 @@ export default function Settings() {
           <CardContent className="space-y-6">
             {/* Backup Stats */}
             {backupStats && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl">
                 <div className="text-center">
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {backupStats.workoutsCount}
@@ -581,6 +581,12 @@ export default function Settings() {
                     {backupStats.clientsCount}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Clienti</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {backupStats.exerciseGlossaryCount}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Esercizi</p>
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">

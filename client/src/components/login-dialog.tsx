@@ -78,21 +78,23 @@ export function LoginDialog({ trigger }: { trigger: React.ReactNode }) {
         setSendingReset(true);
         setError(null);
         setSuccess(null);
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/reset-password`,
-        });
-        setSendingReset(false);
-        if (error) {
-            setError(error.message);
-        } else {
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+            });
+            if (error) throw error;
             setSuccess('Email inviata! Controlla la casella per reimpostare la password.');
+        } catch (err: any) {
+            setError(err?.message || 'Impossibile inviare email di reset');
+        } finally {
+            setSendingReset(false);
         }
     };
 
         return (
                 <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
                         <DialogTrigger asChild>{trigger}</DialogTrigger>
-                        <DialogContent>
+                        <DialogContent onInteractOutside={(e) => e.preventDefault()}>
                                 <DialogHeader>
                                         <DialogTitle>{mode === 'login' ? 'Login' : 'Registrazione'}</DialogTitle>
                                         <DialogDescription>

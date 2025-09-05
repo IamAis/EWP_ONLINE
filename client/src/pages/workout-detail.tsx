@@ -1,6 +1,6 @@
 import { useParams, useLocation, Link } from 'wouter';
 import { useState } from 'react';
-import { ArrowLeft, Edit, Copy, FileText, Save, Plus, Calendar } from 'lucide-react';
+import { ArrowLeft, Edit, Copy, FileText, Save, Plus, Calendar, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,6 +12,7 @@ import { pdfGenerator } from '@/lib/pdf-generator';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
 import type { Workout, Day, Exercise } from '@shared/schema';
+import { WorkoutExportDialog } from '@/components/workout-export-dialog';
 
 export default function WorkoutDetail() {
   const params = useParams();
@@ -23,6 +24,7 @@ export default function WorkoutDetail() {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editedWorkout, setEditedWorkout] = useState<Workout | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   if (isLoading || !workout) {
     return (
@@ -75,6 +77,10 @@ export default function WorkoutDetail() {
   const handleCancel = () => {
     setIsEditing(false);
     setEditedWorkout(null);
+  };
+  
+  const handleExportWithGlossary = () => {
+    setExportDialogOpen(true);
   };
 
   const handleExportPDF = async () => {
@@ -130,6 +136,13 @@ export default function WorkoutDetail() {
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-mobile-nav">
+      {/* Export Dialog */}
+      <WorkoutExportDialog 
+        workout={workout}
+        coachProfile={coachProfile}
+        open={exportDialogOpen}
+        onOpenChange={setExportDialogOpen}
+      />
       {/* Header */}
       <div className="mb-8">
         {/* Desktop Header */}
@@ -168,10 +181,16 @@ export default function WorkoutDetail() {
                   <Edit size={16} className="mr-2" />
                   Modifica
                 </Button>
-                <Button onClick={handleExportPDF} className="bg-orange-500 hover:bg-orange-600">
-                  <FileText size={16} className="mr-2" />
-                  Esporta PDF
-                </Button>
+                <div className="flex space-x-2">
+                  <Button onClick={handleExportPDF} className="bg-orange-500 hover:bg-orange-600">
+                    <FileText size={16} className="mr-2" />
+                    Esporta PDF
+                  </Button>
+                  <Button onClick={handleExportWithGlossary} className="glass-effect bg-gradient-primary hover:opacity-90 transition-opacity text-white">
+                    <Download size={16} className="mr-2" />
+                    Esporta con Esercizi
+                  </Button>
+                </div>
               </>
             )}
           </div>
@@ -221,10 +240,14 @@ export default function WorkoutDetail() {
                   <Edit size={16} className="mr-2" />
                   Modifica Scheda
                 </Button>
-                <Button onClick={handleExportPDF} className="w-full bg-orange-500 hover:bg-orange-600 touch-action-manipulation">
+                <Button onClick={handleExportPDF} className="w-full bg-orange-500 hover:bg-orange-600 touch-action-manipulation mb-2">
                   <FileText size={16} className="mr-2" />
                   Esporta PDF
                 </Button>
+                <Button onClick={handleExportWithGlossary} className="w-full glass-effect bg-gradient-primary hover:opacity-90 transition-opacity text-white touch-action-manipulation">
+                   <Download size={16} className="mr-2" />
+                   Esporta con Esercizi
+                 </Button>
               </>
             )}
           </div>

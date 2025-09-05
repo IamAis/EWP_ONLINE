@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import type { Workout, CoachProfile } from '@shared/schema';
+import { any } from 'zod';
 
 export class PDFGenerator {
   private doc: jsPDF;
@@ -14,7 +15,14 @@ export class PDFGenerator {
     this.margin = 20;
   }
 
-  async generateWorkoutPDF(workout: Workout, coachProfile?: CoachProfile | null, filename?: string): Promise<Blob> {
+  async generateWorkoutPDF(workout: Workout, coachProfile?: CoachProfile | null, filename?: string, selectedExercises?: any[]): Promise<Blob> {
+    // Check if there are any exercises with glossary content or if we have manually selected exercises
+    const hasGlossaryExercises = workout.weeks.some(week => 
+      week.days.some(day => 
+        day.exercises.some(exercise => exercise.glossaryContent)
+      )
+    ) || (selectedExercises && selectedExercises.length > 0);
+    
     this.doc = new jsPDF();
     let yPosition = this.margin;
 
@@ -44,6 +52,12 @@ export class PDFGenerator {
     // Dietary advice
     if (workout.dietaryAdvice) {
       yPosition = this.addDietaryAdvice(workout.dietaryAdvice, yPosition, lineColor, textColor);
+      yPosition += 10;
+    }
+    
+    // Glossary exercises section
+    if (hasGlossaryExercises) {
+      yPosition = this.addGlossaryExercises(workout, yPosition, lineColor, textColor, selectedExercises);
     }
 
     // Footer with coach contact info (includes optional small watermark)
@@ -424,6 +438,120 @@ export class PDFGenerator {
       }
     }
     return best || ellipsis;
+  }
+
+  private addGlossaryExercises(workout: Workout, yPosition: number, lineColor?: string, textColor?: string, selectedExercises?: any[]): number {
+    // Check if we need a new page
+    if (yPosition > this.pageHeight - 60) {
+      this.doc.addPage();
+      yPosition = this.margin;
+    }
+
+    // Title for glossary section
+    this.doc.setFont('helvetica', 'bold');
+    this.doc.setFontSize(14);
+    const titleRgb = this.hexToRgb(textColor || '#4F46E5');
+    this.doc.setTextColor(titleRgb.r, titleRgb.g, titleRgb.b);
+    this.doc.text('GLOSSARIO ESERCIZI', this.margin, yPosition);
+    yPosition += 8;
+
+    // Reset text color
+    this.doc.setTextColor(0, 0, 0);
+    
+    // Collect all exercises with glossary content
+    const glossaryExercises: Array<any> = [];
+    
+    // Add exercises from the workout that have glossary content
+    workout.weeks.forEach(week => {
+      week.days.forEach(day => {
+        day.exercises.forEach(exercise => {
+          if (exercise.glossaryContent && !glossaryExercises.some(e => e.name === exercise.name)) {
+            glossaryExercises.push(exercise);
+          }
+        });
+      });
+    });
+    
+    // Add manually selected exercises if provided
+    if (selectedExercises && selectedExercises.length > 0) {
+      selectedExercises.forEach(exercise => {
+        if (!glossaryExercises.some(e => e.name === exercise.name)) {
+          // Create a compatible exercise object
+          glossaryExercises.push({
+            name: exercise.name,
+            glossaryContent: exercise.glossaryContent || {
+              description: exercise.description || '',
+              images: exercise.images || []
+            }
+          });
+        }
+      });
+    }
+
+    // If no exercises with glossary content, return
+    if (glossaryExercises.length === 0) {
+      return yPosition;
+    }
+
+    // Add each exercise from glossary
+    for (const exercise of glossaryExercises) {
+      // Exercise name
+      this.doc.setFont('helvetica', 'bold');
+      this.doc.setFontSize(12);
+      this.doc.text(exercise.name, this.margin, yPosition);
+      yPosition += 6;
+      
+      // Add line under exercise name with coach line color
+      const lineColorRgb = this.hexToRgb(lineColor || '#000000');
+      this.doc.setDrawColor(lineColorRgb.r, lineColorRgb.g, lineColorRgb.b);
+      this.doc.setLineWidth(0.5);
+      this.doc.line(this.margin, yPosition - 3, this.pageWidth - this.margin, yPosition - 3);
+
+      // Exercise description
+      if (exercise.glossaryContent?.description) {
+        this.doc.setFont('helvetica', 'normal');
+        this.doc.setFontSize(10);
+        const descLines = this.doc.splitTextToSize(
+          exercise.glossaryContent.description,
+          this.pageWidth - 2 * this.margin
+        );
+        this.doc.text(descLines, this.margin, yPosition);
+        yPosition += descLines.length * 5 + 5;
+      }
+
+      // Exercise images
+      if (exercise.glossaryContent?.images && exercise.glossaryContent.images.length > 0) {
+        for (const imageUrl of exercise.glossaryContent.images) {
+          try {
+            // Check if we need a new page for the image
+            if (yPosition > this.pageHeight - 60) {
+              this.doc.addPage();
+              yPosition = this.margin;
+            }
+
+            // Add image
+            const imgWidth = 80;
+            const imgHeight = 60;
+            this.doc.addImage(imageUrl, 'JPEG', this.margin, yPosition, imgWidth, imgHeight);
+            yPosition += imgHeight + 10;
+          } catch (error) {
+            console.warn(`Could not add image for exercise ${exercise.name}:`, error);
+          }
+        }
+      }
+
+      // Add space after exercise
+      yPosition += 5;
+      yPosition += 10;
+
+      // Check if we need a new page for the next exercise
+      if (yPosition > this.pageHeight - 60) {
+        this.doc.addPage();
+        yPosition = this.margin;
+      }
+    }
+
+    return yPosition;
   }
 
   private hexToRgb(hex: string): { r: number; g: number; b: number } {

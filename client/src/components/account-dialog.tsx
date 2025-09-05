@@ -36,6 +36,9 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 		if (open) {
 			setName(initialName);
 			setEmail(initialEmail);
+			setConfirmEmail('');
+			setConfirmDelete('');
+			setConfirmDeleteText('');
 		}
 	}, [open, initialName, initialEmail]);
 
@@ -47,9 +50,12 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 			if (name !== initialName) {
 				const { error } = await supabase.auth.updateUser({ data: { name } });
 				if (error) throw error;
+				toast({ title: 'Profilo aggiornato', description: 'Le modifiche sono state salvate.' });
+				setOpen(false);
+			} else {
+				toast({ title: 'Nessuna modifica', description: 'Non sono state apportate modifiche al profilo.' });
+				setOpen(false);
 			}
-			toast({ title: 'Profilo aggiornato', description: 'Le modifiche sono state salvate.' });
-			setOpen(false);
 		} catch (err: any) {
 			toast({ 
 				title: 'Errore aggiornamento', 
@@ -63,7 +69,14 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 
 	const onChangeEmail = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!email || email === initialEmail) return;
+		if (!email || email === initialEmail) {
+			toast({
+				title: 'Nessuna modifica',
+				description: 'Inserisci una nuova email diversa da quella attuale',
+				variant: 'default'
+			});
+			return;
+		}
 		if (email !== confirmEmail) {
 			toast({
 				title: 'Errore',
@@ -97,12 +110,20 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 			});
 		} finally {
 			setChangingEmail(false);
+			setConfirmEmail('');
 		}
 	};
 
 	const onChangePassword = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!user?.email) return;
+		if (!user?.email) {
+			toast({
+				title: 'Errore',
+				description: 'Email utente non disponibile',
+				variant: 'destructive'
+			});
+			return;
+		}
 		
 		setChangingPassword(true);
 		try {
@@ -132,7 +153,14 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 
 	const onDeleteAccount = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!user) return;
+		if (!user) {
+			toast({
+				title: 'Errore',
+				description: 'Utente non disponibile',
+				variant: 'destructive'
+			});
+			return;
+		}
 		if (confirmDelete !== user.email) {
 			toast({
 				title: 'Errore',
@@ -169,13 +197,15 @@ export function AccountDialog({ trigger }: { trigger: React.ReactNode }) {
 			});
 		} finally {
 			setDeleting(false);
+			setConfirmDelete('');
+			setConfirmDeleteText('');
 		}
 	};
 
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>{trigger}</DialogTrigger>
-			<DialogContent className="max-w-md mx-auto max-h-[90vh] overflow-y-auto">
+			<DialogContent className="max-w-md mx-auto max-h-[90vh] overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
 				<DialogHeader>
 					<DialogTitle>Il tuo profilo</DialogTitle>
 					<DialogDescription>

@@ -11,6 +11,7 @@ import Workouts from "@/pages/workouts";
 import WorkoutDetail from "@/pages/workout-detail";
 import Clients from "@/pages/clients";
 import Settings from "@/pages/settings";
+import ExerciseGlossary from "@/pages/exercise-glossary";
 import ResetPassword from "@/pages/reset-password";
 import NotFound from "@/pages/not-found";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/workouts" component={Workouts} />
       <Route path="/workout/:id" component={WorkoutDetail} />
       <Route path="/clients" component={Clients} />
+      <Route path="/exercise-glossary" component={ExerciseGlossary} />
       <Route path="/settings" component={Settings} />
       <Route path="/reset-password" component={ResetPassword} />
       <Route component={NotFound} />

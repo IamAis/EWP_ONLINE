@@ -1,5 +1,5 @@
 import { dbOps, db } from './database';
-import type { Workout, Client, CoachProfile } from '@shared/schema';
+import type { Workout, Client, CoachProfile, ExerciseGlossary } from '@shared/schema';
 import { supabase } from '@/lib/supabase';
 
 export class BackupManager {
@@ -60,7 +60,8 @@ export class BackupManager {
       data !== null &&
       (Array.isArray(data.workouts) || data.workouts === undefined) &&
       (Array.isArray(data.clients) || data.clients === undefined) &&
-      (typeof data.coachProfile === 'object' || data.coachProfile === undefined)
+      (typeof data.coachProfile === 'object' || data.coachProfile === undefined) &&
+      (Array.isArray(data.exerciseGlossary) || data.exerciseGlossary === undefined)
     );
   }
 
@@ -68,6 +69,7 @@ export class BackupManager {
     workouts?: Workout[];
     clients?: Client[];
     coachProfile?: CoachProfile;
+    exerciseGlossary?: ExerciseGlossary[];
   } {
     const processedData: any = {};
 
@@ -90,12 +92,21 @@ export class BackupManager {
       processedData.coachProfile = data.coachProfile;
     }
 
+    if (data.exerciseGlossary) {
+      processedData.exerciseGlossary = data.exerciseGlossary.map((exercise: any) => ({
+        ...exercise,
+        createdAt: new Date(exercise.createdAt),
+        updatedAt: new Date(exercise.updatedAt),
+      }));
+    }
+
     return processedData;
   }
 
   static async getBackupStats(): Promise<{
     workoutsCount: number;
     clientsCount: number;
+    exerciseGlossaryCount: number;
     lastBackup?: Date;
   }> {
     const data = await dbOps.exportData();
@@ -105,6 +116,7 @@ export class BackupManager {
     return {
       workoutsCount: data.workouts.length,
       clientsCount: data.clients.length,
+      exerciseGlossaryCount: data.exerciseGlossary.length,
       lastBackup,
     };
   }
@@ -241,4 +253,8 @@ try {
   db.coachProfile.hook('creating', () => BackupManager.scheduleAutoBackup());
   db.coachProfile.hook('updating', () => BackupManager.scheduleAutoBackup());
   db.coachProfile.hook('deleting', () => BackupManager.scheduleAutoBackup());
+  
+  db.exerciseGlossary.hook('creating', () => BackupManager.scheduleAutoBackup());
+  db.exerciseGlossary.hook('updating', () => BackupManager.scheduleAutoBackup());
+  db.exerciseGlossary.hook('deleting', () => BackupManager.scheduleAutoBackup());
 } catch {}

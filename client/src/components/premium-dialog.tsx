@@ -64,6 +64,10 @@ export function PremiumDialog({ open, onOpenChange, feature }: PremiumDialogProp
                   <span className="mr-2 text-indigo-600 dark:text-indigo-400">✓</span>
                   <span>Backup in <b>Cloud</b> dei <b>tuoi Dati</b></span>
                 </li>
+                <li className="flex items-start">
+                  <span className="mr-2 text-indigo-600 dark:text-indigo-400">✓</span>
+                  <span>Inclusione degli esercizi dal <b>Glossario</b> direttamente nelle tue Schede</span>
+                </li>
               </ul>
             </div>
           </div>

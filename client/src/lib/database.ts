@@ -1,10 +1,11 @@
 import Dexie, { Table } from 'dexie';
-import type { Workout, Client, CoachProfile, Exercise, Week, Day } from '@shared/schema';
+import type { Workout, Client, CoachProfile, Exercise, Week, Day, ExerciseGlossary } from '@shared/schema';
 
 export class FitTrackerDatabase extends Dexie {
   workouts!: Table<Workout>;
   clients!: Table<Client>;
   coachProfile!: Table<CoachProfile>;
+  exerciseGlossary!: Table<ExerciseGlossary>;
 
   constructor() {
     super('FitTrackerDatabase');
@@ -12,6 +13,13 @@ export class FitTrackerDatabase extends Dexie {
       workouts: 'id, clientName, coachName, workoutType, createdAt, updatedAt',
       clients: 'id, name, createdAt',
       coachProfile: 'id, name'
+    });
+    
+    this.version(2).stores({
+      workouts: 'id, clientName, coachName, workoutType, createdAt, updatedAt',
+      clients: 'id, name, createdAt',
+      coachProfile: 'id, name',
+      exerciseGlossary: 'id, name, createdAt, updatedAt'
     });
     
     // Upgrade hook to migrate existing data
@@ -84,7 +92,7 @@ export const dbOps = {
     return await db.workouts.get(id);
   },
 
-  async createWorkout(workout: Omit<Workout, 'id' | 'createdAt' | 'updatedAt'>): Promise<Workout> {
+  async createWorkout(workout: Omit<Workout, 'id' | 'createdAt' | 'updatedAt'>): Promise<Workout> { 
     const now = new Date();
     const newWorkout: Workout = {
       ...workout,
@@ -94,6 +102,43 @@ export const dbOps = {
     };
     await db.workouts.add(newWorkout);
     return newWorkout;
+  },
+  
+  // Exercise Glossary operations
+  async getAllExerciseGlossary(): Promise<ExerciseGlossary[]> {
+    return await db.exerciseGlossary.orderBy('name').toArray();
+  },
+
+  async getExerciseGlossary(id: string): Promise<ExerciseGlossary | undefined> {
+    return await db.exerciseGlossary.get(id);
+  },
+
+  async createExerciseGlossary(exercise: Omit<ExerciseGlossary, 'id' | 'createdAt' | 'updatedAt'>): Promise<ExerciseGlossary> {
+    const now = new Date();
+    const newExercise: ExerciseGlossary = {
+      ...exercise,
+      id: crypto.randomUUID(),
+      createdAt: now,
+      updatedAt: now
+    };
+    await db.exerciseGlossary.add(newExercise);
+    return newExercise;
+  },
+
+  async updateExerciseGlossary(id: string, updates: Partial<ExerciseGlossary>): Promise<ExerciseGlossary | undefined> {
+    const existing = await db.exerciseGlossary.get(id);
+    if (!existing) return undefined;
+    
+    const updated = { ...existing, ...updates, updatedAt: new Date() };
+    await db.exerciseGlossary.put(updated);
+    return updated;
+  },
+
+  async deleteExerciseGlossary(id: string): Promise<boolean> {
+    const existing = await db.exerciseGlossary.get(id);
+    if (!existing) return false;
+    await db.exerciseGlossary.delete(id);
+    return true;
   },
 
   async updateWorkout(id: string, updates: Partial<Workout>): Promise<Workout | undefined> {
@@ -242,27 +287,30 @@ export const dbOps = {
     await Promise.all([
       db.workouts.clear(),
       db.clients.clear(),
-      db.coachProfile.clear()
+      db.coachProfile.clear(),
+      db.exerciseGlossary.clear()
     ]);
     // Rimuovi anche il backup del profilo in localStorage per evitare la re-importazione automatica
     try { localStorage.removeItem('coach-profile'); } catch {}
   },
 
-  async exportData(): Promise<{ workouts: Workout[], clients: Client[], coachProfile: CoachProfile | null }> {
-    const [workouts, clients, coachProfile] = await Promise.all([
+  async exportData(): Promise<{ workouts: Workout[], clients: Client[], coachProfile: CoachProfile | null, exerciseGlossary: ExerciseGlossary[] }> {
+    const [workouts, clients, coachProfile, exerciseGlossary] = await Promise.all([
       db.workouts.toArray(),
       db.clients.toArray(),
-      this.getCoachProfile()
+      this.getCoachProfile(),
+      db.exerciseGlossary.toArray()
     ]);
     
     return {
       workouts,
       clients, 
-      coachProfile: coachProfile || null
+      coachProfile: coachProfile || null,
+      exerciseGlossary
     };
   },
 
-  async importData(data: { workouts?: Workout[], clients?: Client[], coachProfile?: CoachProfile }): Promise<void> {
+  async importData(data: { workouts?: Workout[], clients?: Client[], coachProfile?: CoachProfile, exerciseGlossary?: ExerciseGlossary[] }): Promise<void> {
     console.log('💾 Importazione dati nel database:', data);
     
     try {
@@ -285,6 +333,12 @@ export const dbOps = {
         console.log('👨‍💼 Importo profilo coach:', data.coachProfile);
         await db.coachProfile.add(data.coachProfile);
         console.log('✅ Profilo coach importato');
+      }
+      
+      if (data.exerciseGlossary && data.exerciseGlossary.length > 0) {
+        console.log('💪 Importo', data.exerciseGlossary.length, 'esercizi nel glossario');
+        await db.exerciseGlossary.bulkAdd(data.exerciseGlossary);
+        console.log('✅ Glossario esercizi importato');
       }
       
       console.log('🎉 Importazione completata con successo!');

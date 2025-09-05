@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'wouter';
-import { Home, Dumbbell, Users, Settings } from 'lucide-react';
+import { Home, Dumbbell, Users, Settings, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/workouts', icon: Dumbbell, label: 'Schede' },
   { path: '/clients', icon: Users, label: 'Clienti' },
+  { path: '/exercise-glossary', icon: BookOpen, label: 'Glossario' },
   { path: '/settings', icon: Settings, label: 'Impostazioni' },
 ];
 

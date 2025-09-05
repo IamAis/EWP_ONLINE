@@ -1,6 +1,6 @@
 import { useTheme } from '@/hooks/use-theme';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, CloudUpload, Dumbbell, Home, Users, Settings, LogOut, User as UserIcon } from 'lucide-react';
+import { Moon, Sun, CloudUpload, Dumbbell, Home, Users, Settings, LogOut, User as UserIcon, BookOpen } from 'lucide-react';
 import { BackupManager } from '@/lib/backup';
 import { useToast } from '@/hooks/use-toast';
 import { Link, useLocation } from 'wouter';
@@ -14,6 +14,7 @@ const navItems = [
   { path: '/', icon: Home, label: 'Home' },
   { path: '/workouts', icon: Dumbbell, label: 'Schede' },
   { path: '/clients', icon: Users, label: 'Clienti' },
+  { path: '/exercise-glossary', icon: BookOpen, label: 'Glossario' },
   { path: '/settings', icon: Settings, label: 'Impostazioni' },
 ];
 
@@ -45,7 +46,7 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-3 sm:px-8 lg:px-12">
         <div className="flex items-center justify-between py-3 md:py-8">
           <Link href="/">
-            <div className="flex md:flex items-center space-x-5 cursor-pointer hover:opacity-80 transition-opacity">
+            <div className="flex items-center space-x-5 cursor-pointer hover:opacity-80 transition-opacity" style={{ minHeight: '28px', minWidth: '120px', flexShrink: 0 }}>
               <img src={Logo} alt="Logo" className="w-12 h-12 md:w-20 md:h-20 lg:w-28 lg:h-28 object-contain" />
               {/* Titoli rimossi come richiesto */}
             </div>

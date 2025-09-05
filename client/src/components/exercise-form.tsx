@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Minus, Edit, Trash2, Image, Calendar } from 'lucide-react';
-import { processImageForUpload } from '@/lib/image-utils';
+import { Plus, Minus, Trash2, Calendar, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ExerciseGlossarySelector } from '@/components/exercise-glossary-selector';
 import type { Week, Exercise, Day } from '@shared/schema';
+import type { ExerciseGlossary } from '@shared/schema';
 
 interface ExerciseFormProps {
   week: Week;
@@ -18,6 +19,8 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
     ...week,
     days: week.days || []
   });
+  const [glossarySelectorOpen, setGlossarySelectorOpen] = useState(false);
+  const [currentDayId, setCurrentDayId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const addDay = () => {
@@ -62,11 +65,48 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
       notes: '',
       order: 0
     };
-    
+
     const day = (localWeek.days || []).find(d => d.id === dayId);
     if (day) {
       const updatedExercises = [...(day.exercises || []), { ...newExercise, order: (day.exercises || []).length }];
       updateDay(dayId, 'exercises', updatedExercises);
+    }
+  };
+
+  const openGlossarySelector = (dayId: string) => {
+    setCurrentDayId(dayId);
+    setGlossarySelectorOpen(true);
+  };
+
+  const handleSelectGlossaryExercise = (glossaryExercise: ExerciseGlossary) => {
+    if (!currentDayId) return;
+
+    const newExercise: Exercise = {
+      id: crypto.randomUUID(),
+      name: glossaryExercise.name,
+      sets: '3',
+      reps: '10',
+      load: '',
+      rest: '',
+      notes: '',
+      order: 0,
+      // campi extra → se non definiti nel type Exercise devi estendere il tipo
+      glossaryId: glossaryExercise.id,
+      glossaryContent: {
+        description: glossaryExercise.description || '',
+        images: glossaryExercise.images || []
+      }
+    } as Exercise;
+
+    const day = (localWeek.days || []).find(d => d.id === currentDayId);
+    if (day) {
+      const updatedExercises = [...(day.exercises || []), { ...newExercise, order: (day.exercises || []).length }];
+      updateDay(currentDayId, 'exercises', updatedExercises);
+
+      toast({
+        title: "Esercizio importato",
+        description: `${glossaryExercise.name} aggiunto alla scheda`
+      });
     }
   };
 
@@ -85,24 +125,6 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
     if (day) {
       const updatedExercises = (day.exercises || []).filter(exercise => exercise.id !== exerciseId);
       updateDay(dayId, 'exercises', updatedExercises);
-    }
-  };
-
-  const handleImageUpload = async (dayId: string, exerciseId: string, file: File) => {
-    try {
-      const compressedDataUrl = await processImageForUpload(file, 800, 600);
-      updateExercise(dayId, exerciseId, 'imageUrl', compressedDataUrl);
-      
-      toast({
-        title: "Immagine caricata",
-        description: "L'immagine è stata aggiunta all'esercizio"
-      });
-    } catch (error) {
-      toast({
-        title: "Errore",
-        description: error instanceof Error ? error.message : "Impossibile caricare l'immagine",
-        variant: "destructive"
-      });
     }
   };
 
@@ -156,7 +178,7 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
 
       {/* Days */}
       <div className="space-y-8 md:space-y-12">
-        {(localWeek.days || []).map((day, dayIndex) => (
+        {(localWeek.days || []).map((day) => (
           <div key={day.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-white/40 dark:bg-gray-900/20">
             <div className="flex items-center justify-between mb-3">
               <Input
@@ -169,18 +191,18 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => addExercise(day.id)}
-                  className="p-1 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                  onClick={() => openGlossarySelector(day.id)}
+                  className="p-1 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                 >
-                  <Plus size={12} />
+                  <BookOpen size={12} />
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => removeDay(day.id)}
-                  className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  onClick={() => addExercise(day.id)}
+                  className="p-1 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
                 >
-                  <Trash2 size={12} />
+                  <Plus size={12} />
                 </Button>
               </div>
             </div>
@@ -201,51 +223,20 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
               {(day.exercises || []).map((exercise) => (
                 <div 
                   key={exercise.id} 
-                  className="flex flex-col md:flex-row md:items-start space-y-2 md:space-y-0 md:space-x-2 p-3 md:p-2 bg-white/40 dark:bg-gray-700/40 rounded-lg animate-fade-in"
+                  className="flex flex-col md:flex-col space-y-2 md:space-y-0 p-3 md:p-2 bg-white/40 dark:bg-gray-700/40 rounded-lg animate-fade-in"
                 >
-
-                  {/* Mobile-first layout with image and exercise fields */}
-                  <div className="flex md:flex-1 md:items-start space-x-2">
-                    {/* Image upload */}
-                    <div className="relative flex-shrink-0 md:hidden">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            handleImageUpload(day.id, exercise.id, file);
-                          }
-                        }}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                      <div className="w-12 h-12 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 rounded-lg flex items-center justify-center cursor-pointer hover:opacity-75 transition-opacity">
-                        {exercise.imageUrl ? (
-                          <img 
-                            src={exercise.imageUrl} 
-                            alt="Exercise" 
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        ) : (
-                          <Image className="text-gray-500 dark:text-gray-400" size={16} />
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Exercise fields - Responsive layout */}
+                  {/* Campi esercizio */}
+                  <div className="flex md:flex-1 md:items-start">
                     <div className="flex-1 space-y-2 md:space-y-0 md:grid md:grid-cols-5 md:gap-1">
-                      {/* Exercise name - full width on mobile */}
                       <div className="md:col-span-1">
                         <Input
                           placeholder="Esercizio"
                           value={exercise.name}
                           onChange={(e) => updateExercise(day.id, exercise.id, 'name', e.target.value)}
-                          className="text-sm md:text-xs bg-white/50 dark:bg-gray-800/50 w-full touch-manipulation min-h-[44px] md:min-h-[32px]"
+                          className={`text-sm md:text-xs bg-white/50 dark:bg-gray-800/50 w-full touch-manipulation min-h-[44px] md:min-h-[32px] ${exercise.glossaryId ? 'border-blue-300 dark:border-blue-700' : ''}`}
                           style={{ WebkitAppearance: 'none' }}
                         />
                       </div>
-                      
-                      {/* Series, Reps, Load, Rest - 2x2 grid on mobile, single row on desktop */}
                       <div className="grid grid-cols-2 gap-2 md:contents">
                         <Input
                           placeholder="Serie"
@@ -278,50 +269,49 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Desktop image upload */}
-                  <div className="hidden md:block relative flex-shrink-0">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          handleImageUpload(day.id, exercise.id, file);
-                        }
-                      }}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <div className="w-10 h-10 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 rounded-lg flex items-center justify-center cursor-pointer hover:opacity-75 transition-opacity">
-                      {exercise.imageUrl ? (
-                        <img 
-                          src={exercise.imageUrl} 
-                          alt="Exercise" 
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      ) : (
-                        <Image className="text-gray-500 dark:text-gray-400" size={12} />
+
+                  {/* Bottone rimozione */}
+                  <Button 
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeExercise(day.id, exercise.id)}
+                    className="w-full md:w-auto p-2 md:p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 min-h-[44px] md:min-h-[32px]"
+                  >
+                    <Minus size={16} className="md:w-3 md:h-3" />
+                    <span className="ml-1 md:hidden text-sm">Rimuovi</span>
+                  </Button>
+
+                  {/* Glossario se presente */}
+                  {exercise.glossaryContent && (
+                    <div className="mt-2 p-2 rounded-lg text-xs bg-blue-50 dark:bg-blue-900/10">
+                      {exercise.glossaryContent.description && (
+                        <p className="text-gray-700 dark:text-gray-300 mb-2">
+                          {exercise.glossaryContent.description}
+                        </p>
+                      )}
+                      {exercise.glossaryContent.images?.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {exercise.glossaryContent.images.map((img, index) => (
+                            <div
+                              key={index}
+                              className="relative w-16 h-16 rounded overflow-hidden bg-gray-100 dark:bg-gray-800"
+                            >
+                              <img
+                                src={img}
+                                alt={`${exercise.name} - immagine ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
-                  </div>
-
-                  {/* Remove button - full width on mobile */}
-                  <div className="md:flex-shrink-0">
-                    <Button 
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => removeExercise(day.id, exercise.id)}
-                      className="w-full md:w-auto p-2 md:p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 min-h-[44px] md:min-h-[32px]"
-                    >
-                      <Minus size={16} className="md:w-3 md:h-3" />
-                      <span className="ml-1 md:hidden text-sm">Rimuovi</span>
-                    </Button>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
 
-            {/* Add exercise to day button */}
+            {/* Add exercise to day */}
             <Button 
               type="button"
               onClick={() => addExercise(day.id)}
@@ -346,6 +336,14 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
         <Calendar className="mr-2" size={16} />
         Aggiungi Giorno
       </Button>
+      
+      {/* Selettore glossario */}
+      <ExerciseGlossarySelector 
+        open={glossarySelectorOpen}
+        onOpenChange={setGlossarySelectorOpen}
+        onSelectExercise={handleSelectGlossaryExercise}
+        currentDayId={currentDayId || undefined}
+      />
     </div>
   );
 }
