@@ -377,31 +377,30 @@ export function ExerciseGlossaryManager() {
           Glossario Esercizi
         </h2>
         <div className="flex space-x-2">
-          <div className="flex space-x-2">
+          <div className="flex flex-col sm:flex-row sm:justify-end items-center gap-2 w-full">
             <Button
               onClick={() => generatePDF(true)}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
-              
               Anteprima
             </Button>
             <Button
               onClick={() => generatePDF(false)}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 w-full sm:w-auto"
             >
               <Download size={16} />
               Esporta PDF
             </Button>
+            <Button
+              onClick={() => handleOpenDialog()}
+              className="bg-gradient-primary hover:opacity-90 transition-opacity w-full sm:w-auto"
+            >
+              <Plus className="mr-2" size={16} />
+              Nuovo Esercizio
+            </Button>
           </div>
-          <Button
-            onClick={() => handleOpenDialog()}
-            className="bg-gradient-primary hover:opacity-90 transition-opacity"
-          >
-            <Plus className="mr-2" size={16} />
-            Nuovo Esercizio
-          </Button>
         </div>
       </div>
 
