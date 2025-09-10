@@ -121,6 +121,13 @@
   /* Smooth scrolling for mobile */
   html {
     -webkit-overflow-scrolling: touch;
+    font-size: 16px; /* Base font size for larger screens */
+  }
+  
+  @media (max-width: 768px) {
+    html {
+      font-size: 14px; /* Smaller base font size for mobile */
+    }
   }
   
   /* Better mobile input handling */

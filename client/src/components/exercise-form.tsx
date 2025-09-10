@@ -204,6 +204,14 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
                 >
                   <Plus size={12} />
                 </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => removeDay(day.id)}
+                  className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  <Trash2 size={12} />
+                </Button>
               </div>
             </div>
 
