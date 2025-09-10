@@ -132,7 +132,7 @@ export function ExerciseGlossarySelector({
   }
 
   return (
-    <Dialog open={dialogOpen} onOpenChange={(open) => !open && handleClose()}>
+    <Dialog open={dialogOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Seleziona Esercizio dal Glossario</DialogTitle>
@@ -140,24 +140,13 @@ export function ExerciseGlossarySelector({
         
         <TooltipProvider>
           <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
-            <Info className="h-4 w-4" />
-            <span>Gli esercizi selezionati verranno inclusi nel glossario della scheda</span>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 ml-1">
-                  <Info className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs">Gli esercizi selezionati dal glossario verranno aggiunti alla scheda e il loro contenuto completo sarà incluso in fondo al PDF della scheda.</p>
-              </TooltipContent>
-            </Tooltip>
+            <span>Gli esercizi selezionati verranno inclusi nella scheda dal <b>Glossario</b></span>
           </div>
         </TooltipProvider>
         
         <div className="mb-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+
             <Input
               placeholder="Cerca esercizio..."
               className="pl-10"
@@ -242,7 +231,7 @@ export function ExerciseGlossarySelector({
         )}
         
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Annulla</Button>
+          <Button variant="outline" onClick={handleClose}>Annulla</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

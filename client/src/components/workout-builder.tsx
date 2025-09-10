@@ -11,7 +11,7 @@ import { Plus, Save, Eye, Download, Utensils, Users } from 'lucide-react';
 import { useCreateWorkout, useUpdateWorkout } from '@/hooks/use-workouts';
 import { useCoachProfile, useClients } from '@/hooks/use-clients';
 import { useToast } from '@/hooks/use-toast';
-import { pdfGenerator } from '@/lib/pdf-generator';
+import { usePDFGenerator } from '@/hooks/use-pdf-generator';
 import { workoutTypes, levels, insertWorkoutSchema, type InsertWorkout, type Week, type Exercise, type Day, type Workout } from '@shared/schema';
 import { z } from 'zod';
 
@@ -34,6 +34,7 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
   const createWorkout = useCreateWorkout();
   const updateWorkout = useUpdateWorkout();
   const { toast } = useToast();
+  const pdfGenerator = usePDFGenerator();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -451,17 +452,8 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button 
-                type="button"
-                disabled={createWorkout.isPending || updateWorkout.isPending}
-                className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
-                onClick={() => {
-                  const formData = form.getValues();
-                  onSubmit(formData);
-                }}
-              >
-                <Save className="mr-2" size={16} />
-                {(createWorkout.isPending || updateWorkout.isPending) ? 'Salvando...' : (existingWorkout ? 'Aggiorna Scheda' : 'Salva Scheda')}
+              <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+                {existingWorkout ? "Aggiorna Scheda" : "Crea Scheda"}
               </Button>
               
               <Button 

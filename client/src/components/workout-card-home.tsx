@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { WorkoutBuilder } from '@/components/workout-builder';
 import { useToast } from '@/hooks/use-toast';
 import { useCoachProfile } from '@/hooks/use-clients';
-import { pdfGenerator } from '@/lib/pdf-generator';
+import { usePDFGenerator } from '@/hooks/use-pdf-generator';
 import { Link } from 'wouter';
 import type { Workout } from '@shared/schema';
 import { useState } from 'react';
@@ -19,6 +19,7 @@ export function WorkoutCardHome({ workout }: WorkoutCardHomeProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const { toast } = useToast();
   const { data: coachProfile } = useCoachProfile();
+  const pdfGenerator = usePDFGenerator();
 
   const handleExportPDF = async () => {
     try {

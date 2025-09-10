@@ -6,7 +6,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { useDeleteWorkout } from '@/hooks/use-workouts';
 import { useCoachProfile } from '@/hooks/use-clients';
-import { pdfGenerator } from '@/lib/pdf-generator';
+import { usePDFGenerator } from '@/hooks/use-pdf-generator';
 import { Link } from 'wouter';
 import type { Workout } from '@shared/schema';
 
@@ -20,6 +20,7 @@ export function WorkoutCard({ workout, onEdit, onDuplicate }: WorkoutCardProps) 
   const { toast } = useToast();
   const { data: coachProfile } = useCoachProfile();
   const deleteWorkout = useDeleteWorkout();
+  const pdfGenerator = usePDFGenerator();
 
   const handleExportPDF = async () => {
     try {

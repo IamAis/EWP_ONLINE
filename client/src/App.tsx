@@ -39,7 +39,7 @@ function App() {
           <AuthProvider>
             <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-900 transition-all duration-500 overflow-x-hidden">
               <Navigation />
-              <main className="pb-24 md:pb-6 px-2 md:px-0">
+              <main className="container mx-auto pb-24 md:pb-6 px-4 md:px-0">
                 <Router />
               </main>
               <BottomNav />

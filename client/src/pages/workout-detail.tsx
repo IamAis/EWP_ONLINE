@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useWorkout, useUpdateWorkout } from '@/hooks/use-workouts';
 import { useCoachProfile } from '@/hooks/use-clients';
 import { useToast } from '@/hooks/use-toast';
-import { pdfGenerator } from '@/lib/pdf-generator';
+import { usePDFGenerator } from '@/hooks/use-pdf-generator';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
 import type { Workout, Day, Exercise } from '@shared/schema';
@@ -25,6 +25,7 @@ export default function WorkoutDetail() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedWorkout, setEditedWorkout] = useState<Workout | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const pdfGenerator = usePDFGenerator();
 
   if (isLoading || !workout) {
     return (

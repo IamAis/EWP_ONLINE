@@ -223,41 +223,6 @@ export function ExerciseGlossaryManager() {
         doc.text(coachProfile.name, 105, yPos, { align: 'center' });
         yPos += 15;
       }
-      
-      // Informazioni di contatto del coach
-      if (coachProfile) {
-        doc.setFontSize(10);
-        doc.setTextColor(80, 80, 80);
-        
-        let contactInfo = [];
-        if (coachProfile.email) contactInfo.push(`Email: ${coachProfile.email}`);
-        if (coachProfile.phone) contactInfo.push(`Tel: ${coachProfile.phone}`);
-        if (coachProfile.instagram) {
-          const instagram = coachProfile.instagram.startsWith('@') || coachProfile.instagram.startsWith('http') 
-            ? coachProfile.instagram 
-            : `@${coachProfile.instagram}`;
-          contactInfo.push(`Instagram: ${instagram}`);
-        }
-        if (coachProfile.facebook) {
-          contactInfo.push(`Facebook: ${coachProfile.facebook}`);
-        }
-        if (coachProfile.website) {
-          const website = coachProfile.website.startsWith('http') 
-            ? coachProfile.website 
-            : `https://${coachProfile.website}`;
-          contactInfo.push(`Web: ${website}`);
-        }
-        
-        if (contactInfo.length > 0) {
-          const contactText = contactInfo.join(' | ');
-          const contactLines = doc.splitTextToSize(contactText, pageWidth - 40);
-          doc.text(contactLines, 105, yPos, { align: 'center' });
-          yPos += contactLines.length * 5 + 10;
-        }
-      }
-      
-      // Aggiungi spazio prima degli esercizi
-      yPos += 10;
 
       // Esercizi
       for (const exercise of exercises) {
@@ -331,33 +296,43 @@ export function ExerciseGlossaryManager() {
         const pageHeight = doc.internal.pageSize.getHeight();
         const footerY = pageHeight - 15;
         
+
         // Coach contact info
         if (coachProfile) {
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8);
-          doc.setTextColor(100, 100, 100);
-          
-          let contactInfo = [];
-          if (coachProfile.email) contactInfo.push(`Email: ${coachProfile.email}`);
-          if (coachProfile.phone) contactInfo.push(`Tel: ${coachProfile.phone}`);
-          if (coachProfile.instagram) {
-            const instagram = coachProfile.instagram.startsWith('@') || coachProfile.instagram.startsWith('http') 
-              ? coachProfile.instagram 
-              : `@${coachProfile.instagram}`;
-            contactInfo.push(`Instagram: ${instagram}`);
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            
+            let contactInfo = [];
+            if (coachProfile.email) contactInfo.push(`Email: ${coachProfile.email}`);
+            if (coachProfile.phone) contactInfo.push(`Tel: ${coachProfile.phone}`);
+            if (coachProfile.instagram) {
+              const instagram = coachProfile.instagram.startsWith('@') || coachProfile.instagram.startsWith('http') 
+                ? coachProfile.instagram 
+                : `@${coachProfile.instagram}`;
+              contactInfo.push(`Instagram: ${instagram}`);
+            }
+            if (coachProfile.website) {
+              const website = coachProfile.website.startsWith('http') 
+                ? coachProfile.website 
+                : `https://${coachProfile.website}`;
+              contactInfo.push(`Web: ${website}`);
+            }
+            
+            if (contactInfo.length > 0) {
+              const contactText = contactInfo.join(' | ');
+              doc.text(contactText, pageWidth / 2, footerY, { align: 'center' });
+            }
+
+            // Aggiunta watermark se non disabilitato
+            if (coachProfile?.showWatermark !== false) {
+              doc.setFont('helvetica', 'italic');
+              doc.setFontSize(15);
+              doc.setTextColor(150, 150, 150);
+              doc.text('Generato con EasyWorkout Planner', 65, footerY+7);
+            }
           }
-          if (coachProfile.website) {
-            const website = coachProfile.website.startsWith('http') 
-              ? coachProfile.website 
-              : `https://${coachProfile.website}`;
-            contactInfo.push(`Web: ${website}`);
-          }
-          
-          if (contactInfo.length > 0) {
-            const contactText = contactInfo.join(' | ');
-            doc.text(contactText, pageWidth / 2, footerY, { align: 'center' });
-          }
-        }
+
       };
       
       // Aggiungi footer a tutte le pagine

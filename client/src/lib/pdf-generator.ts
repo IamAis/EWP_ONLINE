@@ -7,12 +7,14 @@ export class PDFGenerator {
   private pageWidth: number;
   private pageHeight: number;
   private margin: number;
+  private isLoggedIn: boolean;
 
-  constructor() {
+  constructor(isLoggedIn: boolean = true) {
     this.doc = new jsPDF();
     this.pageWidth = this.doc.internal.pageSize.getWidth();
     this.pageHeight = this.doc.internal.pageSize.getHeight();
     this.margin = 20;
+    this.isLoggedIn = isLoggedIn;
   }
 
   async generateWorkoutPDF(workout: Workout, coachProfile?: CoachProfile | null, filename?: string, selectedExercises?: any[]): Promise<Blob> {
@@ -25,6 +27,26 @@ export class PDFGenerator {
     
     this.doc = new jsPDF();
     let yPosition = this.margin;
+
+    // Se l'utente non è loggato, imposta un profilo coach vuoto con filigrana attiva e colori neri
+    if (!this.isLoggedIn) {
+      coachProfile = {
+        id: '',
+        name: '',
+        email: '',
+        phone: '',
+        bio: '',
+        instagram: '',
+        facebook: '',
+        website: '',
+        logo: '',
+        exportPath: '',
+        pdfLineColor: '#000000',
+        pdfTextColor: '#000000',
+        showWatermark: true,
+        useWorkoutNameAsTitle: false
+      };
+    }
 
     // Set colors from coach profile
     const lineColor = coachProfile?.pdfLineColor || '#000000';
@@ -61,7 +83,11 @@ export class PDFGenerator {
     }
 
     // Footer with coach contact info (includes optional small watermark)
-    this.addFooter(coachProfile);
+    const pageCount = this.doc.internal.pages.length - 1;
+    for (let i = 1; i <= pageCount; i++) {
+      this.doc.setPage(i);
+      this.addFooter(coachProfile, i, pageCount);
+    }
 
     return this.doc.output('blob');
   }
@@ -370,7 +396,7 @@ export class PDFGenerator {
     return yPosition + lines.length * 5;
   }
 
-  private addFooter(coachProfile?: CoachProfile | null): void {
+  private addFooter(coachProfile?: CoachProfile | null, currentPage?: number, totalPages?: number): void {
     const footerY = this.pageHeight - 25;
     
     // Coach contact info
@@ -405,17 +431,29 @@ export class PDFGenerator {
       }
     }
     
+    const watermarkY = footerY + 10;
+
     // Generation info (piccola filigrana rimovibile)
     if (coachProfile?.showWatermark !== false) {
       this.doc.setFont('helvetica', 'italic');
       this.doc.setFontSize(8);
       this.doc.setTextColor(150, 150, 150);
-      this.doc.text('Generato con EasyWorkout Planner', this.margin, footerY + 10);
+      this.doc.text('Generato con EasyWorkout Planner', this.margin, watermarkY);
     }
+
+    // Page number
+    if (currentPage && totalPages) {
+      this.doc.setFont('helvetica', 'italic');
+      this.doc.setFontSize(8);
+      this.doc.setTextColor(150, 150, 150);
+      const pageText = `Pagina ${currentPage} di ${totalPages}`;
+      this.doc.text(pageText, this.pageWidth / 2, watermarkY, { align: 'center' });
+    }
+
     this.doc.setFont('helvetica', 'italic');
     this.doc.setFontSize(8);
     this.doc.setTextColor(150, 150, 150);
-    this.doc.text(new Date().toLocaleDateString('it-IT'), this.pageWidth - this.margin, footerY + 10, { align: 'right' });
+    this.doc.text(new Date().toLocaleDateString('it-IT'), this.pageWidth - this.margin, watermarkY, { align: 'right' });
   }
 
   // Tronca il testo aggiungendo un'ellissi se supera la larghezza massima
@@ -563,5 +601,7 @@ export class PDFGenerator {
     } : { r: 0, g: 0, b: 0 };
   }
 }
+// ... existing code ...
 
-export const pdfGenerator = new PDFGenerator();
+// Rimuovo l'esportazione del singleton pdfGenerator poiché ora utilizzeremo l'hook usePDFGenerator
+// export const pdfGenerator = new PDFGenerator(false);

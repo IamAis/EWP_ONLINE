@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Search, Download, FileText, X, Loader2 } from 'lucide-react';
 import { dbOps } from '@/lib/database';
 import { useToast } from '@/hooks/use-toast';
-import { pdfGenerator } from '@/lib/pdf-generator';
+import { usePDFGenerator } from '@/hooks/use-pdf-generator';
 import { useAuth } from '@/hooks/use-auth';
 import { PremiumDialog } from './premium-dialog';
 import type { Workout, CoachProfile, ExerciseGlossary } from '@shared/schema';
@@ -29,6 +29,7 @@ export function WorkoutExportDialog({ workout, coachProfile, open, onOpenChange 
   const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const pdfGenerator = usePDFGenerator();
 
   useEffect(() => {
     if (open) {
