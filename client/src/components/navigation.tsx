@@ -53,7 +53,8 @@ export function Navigation() {
           </Link>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-10 md:ml-auto md:mr-6">
+          <nav className="hidden md:flex flex-wrap items-center gap-4 md:ml-auto md:mr-6">
+
             {navItems.map(({ path, icon: Icon, label }) => {
               const isActive = location === path;
               return (
@@ -61,13 +62,13 @@ export function Navigation() {
                   <Button
                     variant="ghost"
                     className={cn(
-                      "flex items-center space-x-4 px-10 py-5 transition-all duration-200 text-xl min-w-[160px] h-14",
+                      "flex items-center space-x-2 px-4 py-2 transition-all duration-200 text-base min-w-[120px] h-10",
                       isActive 
                         ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shadow-md" 
                         : "text-gray-600 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-black/20"
                     )}
                   >
-                    <Icon size={26} />
+                    <Icon size={20} />
                     <span className="font-medium">{label}</span>
                   </Button>
                 </Link>
@@ -75,11 +76,11 @@ export function Navigation() {
             })}
             {/* Autenticazione - desktop */}
             {user ? (
-              <div className="hidden md:flex items-center gap-3 ml-4">
+              <div className="hidden md:flex items-center gap-2 ml-4">
                 <AccountDialog
                   trigger={
-                    <Button type="button" variant="outline" className="gap-3 rounded-full border-gray-300 dark:border-gray-700 px-6 py-3 text-lg h-12">
-                      <UserIcon size={20} />
+                    <Button type="button" variant="outline" className="gap-2 rounded-full border-gray-300 dark:border-gray-700 px-4 py-2 text-sm h-10">
+                      <UserIcon size={16} />
                       Profilo
                     </Button>
                   }
@@ -87,13 +88,13 @@ export function Navigation() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="rounded-full border-gray-300 dark:border-gray-700 px-6 py-3 text-lg h-12"
+                  className="rounded-full border-gray-300 dark:border-gray-700 px-4 py-2 text-sm h-10"
                   onClick={async () => {
                     await signOut();
                     toast({ title: 'Sei uscito', description: 'Logout effettuato con successo' });
                   }}
                 >
-                  <LogOut size={20} />
+                  <LogOut size={16} />
                   Esci
                 </Button>
               </div>
@@ -104,7 +105,7 @@ export function Navigation() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="rounded-full border-gray-300 dark:border-gray-700 px-6 py-3 text-lg h-12"
+                      className="rounded-full border-gray-300 dark:border-gray-700 px-4 py-2 text-sm h-10"
                     >
                       Login
                     </Button>
