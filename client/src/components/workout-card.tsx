@@ -92,7 +92,7 @@ export function WorkoutCard({ workout, onEdit, onDuplicate }: WorkoutCardProps) 
       </p>
       
       <div className="flex items-center justify-between">
-        <div className="flex space-x-1">
+        <div className="flex flex-wrap space-x-1">
           <Link href={`/workout/${workout.id}`}>
             <Button
               size="sm"

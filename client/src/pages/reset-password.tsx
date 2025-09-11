@@ -11,6 +11,22 @@ export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: 'Sessione scaduta o non valida',
+          description: 'Per favore, riprova il processo di reimpostazione della password.',
+          variant: 'destructive'
+        });
+        setLocation('/login'); // Reindirizza alla pagina di login se non c'è sessione
+      }
+    };
+
+    checkSession();
+  }, [setLocation, toast]);
+
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPassword || newPassword.length < 6) {
@@ -37,6 +53,7 @@ export default function ResetPassword() {
       
       setLocation('/');
     } catch (err: any) {
+      console.error("Errore durante l'aggiornamento della password:", err);
       toast({ 
         title: 'Errore', 
         description: err?.message || 'Impossibile aggiornare la password',
