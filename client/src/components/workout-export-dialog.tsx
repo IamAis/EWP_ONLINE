@@ -24,8 +24,6 @@ export function WorkoutExportDialog({ workout, coachProfile, open, onOpenChange 
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedExercises, setSelectedExercises] = useState<string[]>([]);
-  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
-  const [previewMode, setPreviewMode] = useState(false);
   const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -38,11 +36,6 @@ export function WorkoutExportDialog({ workout, coachProfile, open, onOpenChange 
       // Reset state when dialog closes
       setSelectedExercises([]);
       setSearchTerm('');
-      if (pdfPreviewUrl) {
-        URL.revokeObjectURL(pdfPreviewUrl);
-        setPdfPreviewUrl(null);
-      }
-      setPreviewMode(false);
     }
   }, [open]);
 
@@ -108,8 +101,8 @@ export function WorkoutExportDialog({ workout, coachProfile, open, onOpenChange 
       if (preview) {
         // Show preview
         const url = URL.createObjectURL(blob);
-        setPdfPreviewUrl(url);
-        setPreviewMode(true);
+        window.open(url, '_blank');
+        URL.revokeObjectURL(url);
       } else {
         // Download PDF
         const url = URL.createObjectURL(blob);
@@ -142,40 +135,6 @@ export function WorkoutExportDialog({ workout, coachProfile, open, onOpenChange 
       });
     }
   };
-
-  // Render preview mode
-  if (previewMode && pdfPreviewUrl) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-5xl max-h-[90vh] h-[90vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Anteprima Scheda</DialogTitle>
-          </DialogHeader>
-          
-          <div className="flex-1 h-full overflow-hidden">
-            <iframe 
-              src={pdfPreviewUrl} 
-              className="w-full h-[calc(90vh-120px)]" 
-              title="Anteprima PDF"
-            />
-          </div>
-          
-          <DialogFooter>
-            <Button 
-              onClick={() => handleExportPDF(false)} 
-              className="bg-gradient-primary hover:opacity-90 transition-opacity"
-            >
-              <Download className="mr-2" size={16} />
-              Scarica PDF
-            </Button>
-            <Button variant="outline" onClick={() => setPreviewMode(false)}>
-              Torna alla selezione
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <>
