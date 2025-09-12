@@ -13,6 +13,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { supabase } from '../lib/supabase';
 
+
 export function LoginDialog({ trigger }: { trigger: React.ReactNode }) {
         const [open, setOpen] = useState(false);
         const [mode, setMode] = useState<'login' | 'register'>('login');

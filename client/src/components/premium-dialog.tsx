@@ -90,7 +90,7 @@ export function PremiumDialog({ open, onOpenChange, feature }: PremiumDialogProp
         </DialogContent>
       </Dialog>
 
-      <LoginDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} />
+      <LoginDialog trigger={<Button>Apri Login</Button>} />
     </>
   );
 }
