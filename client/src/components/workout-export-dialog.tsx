@@ -150,25 +150,34 @@ export function WorkoutExportDialog({ workout, coachProfile, open, onOpenChange 
             Gli esercizi selezionati verranno aggiunti in fondo al PDF.
           </p>
           
-          <div className="mb-4">
-            <div className="relative"> 
-              <Input
-                placeholder="Cerca esercizio..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {searchTerm && (
-                <Button
-                  variant="ghost"
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
-                  onClick={() => setSearchTerm("")}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
+
+    <div className="mb-4">
+      <div className="relative">
+        {/* Icona lente a sinistra, visibile solo se searchTerm è vuoto */}
+        {!searchTerm && (
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+        )}
+
+        <Input
+          placeholder="     Cerca esercizio..."
+          className="pl-10" // padding per spostare il testo a destra della lente
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        {/* Pulsante "X" per svuotare il campo */}
+        {searchTerm && (
+          <Button
+            variant="ghost"
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
+            onClick={() => setSearchTerm('')}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    </div>
+
           
           {isLoading ? (
             <div className="flex justify-center items-center py-8">

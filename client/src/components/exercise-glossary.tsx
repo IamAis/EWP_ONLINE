@@ -438,7 +438,7 @@ const generatePDF = async (preview = false) => {
                 exercise.description && (
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
                     {exercise.description.length > 70
-                    ? exercise.description.slice(0, 67) + "..."
+                    ? exercise.description.slice(0, 58) + "..."
                     : exercise.description}
                   </p>
                 )}

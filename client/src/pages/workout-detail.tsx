@@ -348,6 +348,7 @@ export default function WorkoutDetail() {
 
                       {(day.exercises || []).length > 0 ? (
                         <>
+                        
                           {/* Desktop Table View */}
                           <div className="hidden md:block overflow-x-auto">
                             <table className="w-full text-sm table-fixed">
@@ -365,13 +366,6 @@ export default function WorkoutDetail() {
                                   <tr key={exercise.id} className="border-b border-gray-100 dark:border-gray-700">
                                     <td className="py-2 px-2 align-top">
                                       <div className="flex items-start space-x-2 min-w-0">
-                                        {exercise.imageUrl && (
-                                          <img 
-                                            src={exercise.imageUrl} 
-                                            alt="Exercise" 
-                                            className="w-8 h-8 object-cover rounded"
-                                          />
-                                        )}
                                         <span className="text-gray-900 dark:text-white break-words whitespace-normal block min-w-0">{exercise.name}</span>
                                       </div>
                                     </td>
@@ -389,16 +383,6 @@ export default function WorkoutDetail() {
                           <div className="md:hidden space-y-3">
                             {(day.exercises || []).map((exercise) => (
                               <div key={exercise.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 space-y-2 touch-action-manipulation">
-                                <div className="flex items-center space-x-2">
-                                  {exercise.imageUrl && (
-                                    <img 
-                                      src={exercise.imageUrl} 
-                                      alt="Exercise" 
-                                      className="w-10 h-10 object-cover rounded"
-                                    />
-                                  )}
-                                  <h5 className="font-medium text-gray-900 dark:text-white text-sm">{exercise.name}</h5>
-                                </div>
                                 <div className="grid grid-cols-2 gap-2 text-xs touch-action-manipulation">
                                   <div className="touch-action-manipulation">
                                     <span className="font-medium text-gray-600 dark:text-gray-400">Serie:</span>
