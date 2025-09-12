@@ -146,13 +146,12 @@ export function WorkoutExportDialog({ workout, coachProfile, open, onOpenChange 
         
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Seleziona gli esercizi dal glossario che vuoi includere nella scheda esportata.
+            Seleziona gli esercizi dal glossario che vuoi includere nella scheda esportata.<br></br>
             Gli esercizi selezionati verranno aggiunti in fondo al PDF.
           </p>
           
           <div className="mb-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <div className="relative"> 
               <Input
                 placeholder="Cerca esercizio..."
                 className="pl-10"
@@ -198,11 +197,7 @@ export function WorkoutExportDialog({ workout, coachProfile, open, onOpenChange 
                     >
                       {exercise.name}
                     </Label>
-                    {exercise.description && (
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        {exercise.description}
-                      </p>
-                    )}
+                    
                   </div>
                   {exercise.images && exercise.images.length > 0 && (
                     <div className="flex-shrink-0 w-10 h-10 rounded overflow-hidden bg-gray-100 dark:bg-gray-800">

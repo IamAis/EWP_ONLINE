@@ -70,7 +70,23 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
 
   useEffect(() => {
     if (existingWorkout) {
-      setWeeks(existingWorkout.weeks);
+      // Clean and normalize existing workout data
+      const cleanedWeeks = existingWorkout.weeks.map(week => ({
+        ...week,
+        days: week.days.map(day => ({
+          ...day,
+          exercises: day.exercises
+            .filter(exercise => exercise !== null) // Remove null exercises
+            .map(exercise => ({
+              ...exercise,
+              name: exercise.name || 'Nuovo Esercizio', // Ensure name is not empty
+              sets: exercise.sets === '' || exercise.sets === null ? '1' : exercise.sets, // Normalize sets
+              reps: exercise.reps === '' || exercise.reps === null ? '1' : exercise.reps, // Normalize reps
+            }))
+        }))
+      }));
+
+      setWeeks(cleanedWeeks);
       setSelectedClientId(existingWorkout.clientId || null);
       form.reset({
         name: existingWorkout.name || '',
@@ -82,10 +98,10 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
         duration: existingWorkout.duration,
         description: existingWorkout.description || '',
         dietaryAdvice: existingWorkout.dietaryAdvice || '',
-        weeks: existingWorkout.weeks
+        weeks: cleanedWeeks // Use cleaned weeks for form reset
       });
     }
-  }, [existingWorkout, form]);
+  }, [existingWorkout, form, coachProfile?.name]); // Added coachProfile?.name to dependencies
 
   const addWeek = () => {
     const newWeek: Week = {
@@ -452,7 +468,14 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button type="submit" disabled={form.formState.isSubmitting} className="w-full">
+              <Button 
+                type="submit" disabled={form.formState.isSubmitting} className="w-full"
+                
+                onClick={() => {
+                  console.log("Aggiorna Scheda button pressed");
+                  console.log("Form errors:", form.formState.errors);
+                }}
+              >
                 {existingWorkout ? "Aggiorna Scheda" : "Crea Scheda"}
               </Button>
               

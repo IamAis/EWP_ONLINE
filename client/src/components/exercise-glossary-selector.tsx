@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, Plus, Check, Info, Loader2, X } from 'lucide-react';
@@ -91,6 +91,7 @@ export function ExerciseGlossarySelector({
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedExercise.name}</DialogTitle>
+            <DialogDescription>Dettagli dell'esercizio selezionato</DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
@@ -136,6 +137,7 @@ export function ExerciseGlossarySelector({
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Seleziona Esercizio dal Glossario</DialogTitle>
+          <DialogDescription>Seleziona un esercizio dal glossario per aggiungerlo alla scheda</DialogDescription>
         </DialogHeader>
         
         <TooltipProvider>

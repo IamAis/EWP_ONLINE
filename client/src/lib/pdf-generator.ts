@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import autoTable from "jspdf-autotable";
 import type { Workout, CoachProfile } from '@shared/schema';
 import { any } from 'zod';
 
@@ -478,119 +479,116 @@ export class PDFGenerator {
     return best || ellipsis;
   }
 
-  private addGlossaryExercises(workout: Workout, yPosition: number, lineColor?: string, textColor?: string, selectedExercises?: any[]): number {
-    // Check if we need a new page
+   private addGlossaryExercises(
+    workout: Workout,
+    yPosition: number,
+    lineColor?: string,
+    textColor?: string,
+    selectedExercises?: any[]
+  ): number {
     if (yPosition > this.pageHeight - 60) {
       this.doc.addPage();
       yPosition = this.margin;
     }
 
-    // Title for glossary section
-    this.doc.setFont('helvetica', 'bold');
+    // Titolo
+    this.doc.setFont("helvetica", "bold");
     this.doc.setFontSize(14);
-    const titleRgb = this.hexToRgb(textColor || '#4F46E5');
+    const titleRgb = this.hexToRgb(textColor || "#4F46E5");
     this.doc.setTextColor(titleRgb.r, titleRgb.g, titleRgb.b);
-    this.doc.text('GLOSSARIO ESERCIZI', this.margin, yPosition);
-    yPosition += 8;
-
-    // Reset text color
+    this.doc.text("GLOSSARIO ESERCIZI", this.margin, yPosition);
+    yPosition += 12;
     this.doc.setTextColor(0, 0, 0);
-    
-    // Collect all exercises with glossary content
+
+    // Raccogli esercizi
     const glossaryExercises: Array<any> = [];
-    
-    // Add exercises from the workout that have glossary content
-    workout.weeks.forEach(week => {
-      week.days.forEach(day => {
-        day.exercises.forEach(exercise => {
-          if (exercise.glossaryContent && !glossaryExercises.some(e => e.name === exercise.name)) {
+    workout.weeks.forEach((week) => {
+      week.days.forEach((day) => {
+        day.exercises.forEach((exercise) => {
+          if (exercise.glossaryContent && !glossaryExercises.some((e) => e.name === exercise.name)) {
             glossaryExercises.push(exercise);
           }
         });
       });
     });
-    
-    // Add manually selected exercises if provided
+
     if (selectedExercises && selectedExercises.length > 0) {
-      selectedExercises.forEach(exercise => {
-        if (!glossaryExercises.some(e => e.name === exercise.name)) {
-          // Create a compatible exercise object
+      selectedExercises.forEach((exercise) => {
+        if (!glossaryExercises.some((e) => e.name === exercise.name)) {
           glossaryExercises.push({
             name: exercise.name,
             glossaryContent: exercise.glossaryContent || {
-              description: exercise.description || '',
-              images: exercise.images || []
-            }
+              description: exercise.description || "",
+              images: exercise.images || [],
+            },
           });
         }
       });
     }
 
-    // If no exercises with glossary content, return
-    if (glossaryExercises.length === 0) {
-      return yPosition;
-    }
+    if (glossaryExercises.length === 0) return yPosition;
 
-    // Add each exercise from glossary
-    for (const exercise of glossaryExercises) {
-      // Exercise name
-      this.doc.setFont('helvetica', 'bold');
-      this.doc.setFontSize(12);
-      this.doc.text(exercise.name, this.margin, yPosition);
-      yPosition += 6;
-      
-      // Add line under exercise name with coach line color
-      const lineColorRgb = this.hexToRgb(lineColor || '#000000');
-      this.doc.setDrawColor(lineColorRgb.r, lineColorRgb.g, lineColorRgb.b);
-      this.doc.setLineWidth(0.5);
-      this.doc.line(this.margin, yPosition - 3, this.pageWidth - this.margin, yPosition - 3);
+     const rgb = this.hexToRgb(lineColor || "#000000");
 
-      // Exercise description
-      if (exercise.glossaryContent?.description) {
-        this.doc.setFont('helvetica', 'normal');
-        this.doc.setFontSize(10);
-        const descLines = this.doc.splitTextToSize(
-          exercise.glossaryContent.description,
-          this.pageWidth - 2 * this.margin
-        );
-        this.doc.text(descLines, this.margin, yPosition);
-        yPosition += descLines.length * 5 + 5;
-      }
+    for (const ex of glossaryExercises) {
+    autoTable(this.doc, {
+      startY: yPosition,
+      head: [[ex.name]],
+      body: [[ex.glossaryContent?.description || "Nessuna descrizione"]],
+      theme: "grid",
+      styles: {
+        fontSize: 10,
+        cellPadding: 5,
+        halign: "left",
+      },
+      headStyles: {
+        fillColor: [rgb.r, rgb.g, rgb.b], // qui usiamo il colore personalizzato
+        textColor: 255,
+        fontSize: 12,
+      },
+      bodyStyles: {
+        lineColor: [rgb.r, rgb.g, rgb.b], // bordi coerenti
+        lineWidth: 0.2,
+      },
+      margin: { left: this.margin, right: this.margin },
+    });
 
-      // Exercise images
-      if (exercise.glossaryContent?.images && exercise.glossaryContent.images.length > 0) {
-        for (const imageUrl of exercise.glossaryContent.images) {
-          try {
-            // Check if we need a new page for the image
-            if (yPosition > this.pageHeight - 60) {
-              this.doc.addPage();
-              yPosition = this.margin;
-            }
+    yPosition = (this.doc as any).lastAutoTable.finalY + 8;
 
-            // Add image
-            const imgWidth = 80;
-            const imgHeight = 60;
-            this.doc.addImage(imageUrl, 'JPEG', this.margin, yPosition, imgWidth, imgHeight);
-            yPosition += imgHeight + 10;
-          } catch (error) {
-            console.warn(`Could not add image for exercise ${exercise.name}:`, error);
-          }
+    // Immagini
+    if (ex.glossaryContent?.images?.length > 0) {
+      let imgX = this.margin;
+      let imgY = yPosition;
+      const imgW = 40;
+      const imgH = 40;
+
+      for (const img of ex.glossaryContent.images) {
+        if (imgX + imgW > this.pageWidth - this.margin) {
+          imgX = this.margin;
+          imgY += imgH + 10;
         }
+        if (imgY + imgH > this.pageHeight - 30) {
+          this.doc.addPage();
+          imgY = this.margin;
+        }
+        try {
+          this.doc.addImage(img, "JPEG", imgX, imgY, imgW, imgH);
+        } catch (err) {
+          console.warn("Errore immagine glossario:", err);
+        }
+        imgX += imgW + 10;
       }
-
-      // Add space after exercise
-      yPosition += 5;
-      yPosition += 10;
-
-      // Check if we need a new page for the next exercise
-      if (yPosition > this.pageHeight - 60) {
-        this.doc.addPage();
-        yPosition = this.margin;
-      }
+      yPosition = imgY + imgH + 15;
     }
 
-    return yPosition;
+    if (yPosition > this.pageHeight - 60) {
+      this.doc.addPage();
+      yPosition = this.margin;
+    }
   }
+
+  return yPosition;
+}
 
   private hexToRgb(hex: string): { r: number; g: number; b: number } {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -600,6 +598,8 @@ export class PDFGenerator {
       b: parseInt(result[3], 16)
     } : { r: 0, g: 0, b: 0 };
   }
+
+  
 }
 // ... existing code ...
 

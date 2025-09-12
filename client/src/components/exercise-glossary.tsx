@@ -9,9 +9,10 @@ import { processImageForUpload } from '@/lib/image-utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { dbOps } from '@/lib/database';
 import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import type { ExerciseGlossary } from '@shared/schema';
 import { usePDFGenerator } from '@/hooks/use-pdf-generator';
- import { useRef } from 'react';
+import { useRef } from 'react';
 
 export function ExerciseGlossaryManager() {
   const [exercises, setExercises] = useState<ExerciseGlossary[]>([]);
@@ -168,217 +169,201 @@ export function ExerciseGlossaryManager() {
     }
   };
 
-  const generatePDF = async (preview = false) => {
-    if (exercises.length === 0) {
-      toast({
-        title: 'Nessun esercizio',
-        description: 'Non ci sono esercizi nel glossario da esportare',
-        variant: 'destructive'
-      });
-      return null;
+const generatePDF = async (preview = false) => {
+  if (exercises.length === 0) {
+    toast({
+      title: 'Nessun esercizio',
+      description: 'Non ci sono esercizi nel glossario da esportare',
+      variant: 'destructive'
+    });
+    return null;
+  }
+
+  try {
+    const doc = new jsPDF();
+    let yPos = 20;
+
+    // Ottieni profilo coach per info PDF
+    const coachProfile = await dbOps.getCoachProfile();
+    const textColor = coachProfile?.pdfTextColor || '#4F46E5';
+    const lineColor = coachProfile?.pdfLineColor || '#000000';
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Funzione per convertire HEX in RGB
+    const hexToRgb = (hex: string) => {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result
+        ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+          }
+        : { r: 0, g: 0, b: 0 };
+    };
+    const textColorRgb = hexToRgb(textColor);
+
+    // Logo
+    if (coachProfile?.logo) {
+      try {
+        const logoSize = 30;
+        const logoX = (pageWidth - logoSize) / 2;
+        doc.addImage(coachProfile.logo, 'JPEG', logoX, yPos, logoSize, logoSize);
+        yPos += logoSize + 10;
+      } catch (error) {
+        console.warn('Logo non aggiunto al PDF:', error);
+      }
     }
 
-    try {
-      const doc = new jsPDF();
-      let yPos = 20;
-      
-      // Ottieni il profilo coach per i colori e le informazioni
-      const coachProfile = await dbOps.getCoachProfile();
-      const textColor = coachProfile?.pdfTextColor || '#4F46E5';
-      const lineColor = coachProfile?.pdfLineColor || '#000000';
-      
-      // Converti colore esadecimale in RGB per jsPDF
-      const hexToRgb = (hex: string) => {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16)
-        } : { r: 0, g: 0, b: 0 };
-      };
-      
-      const textColorRgb = hexToRgb(textColor);
-      const pageWidth = doc.internal.pageSize.getWidth();
-      
-      // Aggiungi logo se presente
-      if (coachProfile?.logo) {
-        try {
-          // Logo centrato sopra il titolo
-          const logoSize = 30;
-          const logoX = (pageWidth - logoSize) / 2;
-          doc.addImage(coachProfile.logo, 'JPEG', logoX, yPos, logoSize, logoSize);
-          yPos += logoSize + 10; // Spazio dopo il logo
-        } catch (error) {
-          console.warn('Could not add logo to PDF:', error);
-        }
-      }
-      
-      // Titolo
-      doc.setFontSize(22);
-      doc.setTextColor(textColorRgb.r, textColorRgb.g, textColorRgb.b);
-      doc.text('GLOSSARIO ESERCIZI', 105, yPos, { align: 'center' });
+    // Titolo
+    doc.setFontSize(22);
+    doc.setTextColor(textColorRgb.r, textColorRgb.g, textColorRgb.b);
+    doc.text('GLOSSARIO ESERCIZI', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Sottotitolo
+    if (coachProfile?.name) {
+      doc.setFontSize(12);
+      doc.setTextColor(100, 100, 100);
+      doc.text(coachProfile.name, pageWidth / 2, yPos, { align: 'center' });
       yPos += 15;
+    }
 
-      // Sottotitolo con nome coach
+    // --- CICLO ESERCIZI ---
+    for (const exercise of exercises) {
+      // Tabella con nome e descrizione
+      autoTable(doc, {
+        startY: yPos,
+        head: [[exercise.name]],
+        body: [[exercise.description || 'Nessuna descrizione']],
+        theme: 'grid',
+        styles: {
+          fontSize: 10,
+          cellPadding: 5,
+          halign: 'left',
+          valign: 'top',
+        },
+        headStyles: {
+          fillColor: [hexToRgb(lineColor).r, hexToRgb(lineColor).g, hexToRgb(lineColor).b],
+          textColor: 255,
+          fontSize: 12,
+        },
+        margin: { left: 20, right: 20 },
+      });
+
+      // aggiorna yPos sotto la tabella
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+
+      // Aggiungi immagini sotto la tabella
+      if (exercise.images && exercise.images.length > 0) {
+        let imgX = 25;
+        let imgY = yPos;
+        const imgWidth = 40;
+        const imgHeight = 40;
+
+        for (const imgSrc of exercise.images) {
+          if (imgX + imgWidth > pageWidth - 25) {
+            imgX = 25;
+            imgY += imgHeight + 10;
+          }
+
+          if (imgY + imgHeight > doc.internal.pageSize.getHeight() - 30) {
+            doc.addPage();
+            imgY = 20;
+          }
+
+          try {
+            doc.addImage(imgSrc, 'JPEG', imgX, imgY, imgWidth, imgHeight);
+          } catch (error) {
+            console.error('Errore aggiunta immagine PDF:', error);
+          }
+
+          imgX += imgWidth + 10;
+        }
+
+        yPos = imgY + imgHeight + 15;
+      }
+    }
+
+    // Footer
+    const addFooter = () => {
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const footerY = pageHeight - 15;
+
       if (coachProfile) {
-        doc.setFontSize(12);
-        doc.setTextColor(100, 100, 100); // Grigio per il nome del coach
-        doc.text(coachProfile.name, 105, yPos, { align: 'center' });
-        yPos += 15;
-      }
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
 
-      // Esercizi
-      for (const exercise of exercises) {
-        // Verifica se c'è abbastanza spazio nella pagina
-        if (yPos > 250) {
-          doc.addPage();
-          yPos = 20;
+        let contactInfo: string[] = [];
+        if (coachProfile.email) contactInfo.push(`Email: ${coachProfile.email}`);
+        if (coachProfile.phone) contactInfo.push(`Tel: ${coachProfile.phone}`);
+        if (coachProfile.instagram) {
+          const instagram =
+            coachProfile.instagram.startsWith('@') ||
+            coachProfile.instagram.startsWith('http')
+              ? coachProfile.instagram
+              : `@${coachProfile.instagram}`;
+          contactInfo.push(`Instagram: ${instagram}`);
+        }
+        if (coachProfile.website) {
+          const website = coachProfile.website.startsWith('http')
+            ? coachProfile.website
+            : `https://${coachProfile.website}`;
+          contactInfo.push(`Web: ${website}`);
         }
 
-        // Nome esercizio
-        doc.setFontSize(16);
-        doc.setTextColor(textColorRgb.r, textColorRgb.g, textColorRgb.b); // Usa il colore del testo dalle impostazioni coach
-        doc.text(exercise.name, 20, yPos);
-        yPos += 10;
-
-        // Linea sotto il nome dell'esercizio
-        const lineColorRgb = hexToRgb(lineColor);
-        doc.setDrawColor(lineColorRgb.r, lineColorRgb.g, lineColorRgb.b);
-        doc.line(20, yPos - 5, 190, yPos - 5);
-
-        // Descrizione
-        if (exercise.description) {
-          doc.setFontSize(10);
-          doc.setTextColor(80, 80, 80); // Grigio scuro per la descrizione
-          
-          // Dividi la descrizione in righe
-          const splitDescription = doc.splitTextToSize(exercise.description, 170);
-          doc.text(splitDescription, 20, yPos);
-          yPos += splitDescription.length * 5 + 5;
+        if (contactInfo.length > 0) {
+          doc.text(contactInfo.join(' | '), pageWidth / 2, footerY, {
+            align: 'center',
+          });
         }
 
-        // Immagini
-        if (exercise.images && exercise.images.length > 0) {
-          const imgWidth = 50;
-          const imgHeight = 50;
-          let xPos = 20;
-          
-          for (const imgSrc of exercise.images) {
-            // Verifica se c'è abbastanza spazio nella riga
-            if (xPos + imgWidth > 190) {
-              xPos = 20;
-              yPos += imgHeight + 10;
-            }
-            
-            // Verifica se c'è abbastanza spazio nella pagina
-            if (yPos + imgHeight > 280) {
-              doc.addPage();
-              yPos = 20;
-              xPos = 20;
-            }
-            
-            try {
-              doc.addImage(imgSrc, 'JPEG', xPos, yPos, imgWidth, imgHeight);
-              xPos += imgWidth + 10;
-            } catch (error) {
-              console.error('Errore nell\'aggiunta dell\'immagine al PDF:', error);
-            }
-          }
-          
-          yPos += imgHeight + 15;
-        } else {
-          yPos += 10;
+        if (coachProfile?.showWatermark !== false) {
+          doc.setFont('helvetica', 'italic');
+          doc.setFontSize(15);
+          doc.setTextColor(150, 150, 150);
+          doc.text('Generato con EasyWorkout Planner', 65, footerY + 7);
         }
-
-        // Aggiungi spazio tra gli esercizi senza linea aggiuntiva
-        yPos += 15;
       }
+    };
 
-      // Aggiungi footer con informazioni di contatto
-      const addFooter = () => {
-        const pageHeight = doc.internal.pageSize.getHeight();
-        const footerY = pageHeight - 15;
-        
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      addFooter();
+    }
 
-        // Coach contact info
-        if (coachProfile) {
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8);
-            doc.setTextColor(100, 100, 100);
-            
-            let contactInfo = [];
-            if (coachProfile.email) contactInfo.push(`Email: ${coachProfile.email}`);
-            if (coachProfile.phone) contactInfo.push(`Tel: ${coachProfile.phone}`);
-            if (coachProfile.instagram) {
-              const instagram = coachProfile.instagram.startsWith('@') || coachProfile.instagram.startsWith('http') 
-                ? coachProfile.instagram 
-                : `@${coachProfile.instagram}`;
-              contactInfo.push(`Instagram: ${instagram}`);
-            }
-            if (coachProfile.website) {
-              const website = coachProfile.website.startsWith('http') 
-                ? coachProfile.website 
-                : `https://${coachProfile.website}`;
-              contactInfo.push(`Web: ${website}`);
-            }
-            
-            if (contactInfo.length > 0) {
-              const contactText = contactInfo.join(' | ');
-              doc.text(contactText, pageWidth / 2, footerY, { align: 'center' });
-            }
-
-            // Aggiunta watermark se non disabilitato
-            if (coachProfile?.showWatermark !== false) {
-              doc.setFont('helvetica', 'italic');
-              doc.setFontSize(15);
-              doc.setTextColor(150, 150, 150);
-              doc.text('Generato con EasyWorkout Planner', 65, footerY+7);
-            }
-          }
-
-      };
-      
-      // Aggiungi footer a tutte le pagine
-      const totalPages = doc.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        addFooter();
-      }
-      
-      if (preview) {
-        // Restituisci il blob per l'anteprima
-        const pdfBlob = doc.output('blob');
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        window.open(pdfUrl, '_blank'); 
-        return pdfUrl;
-      } else {
-        // Salva il PDF
-        doc.save('Glossario_Esercizi.pdf');
-        
-        toast({
-          title: 'PDF generato',
-          description: 'Il glossario esercizi è stato esportato in PDF'
-        });
-        return null;
-      }
-    } catch (error) {
-      console.error('Errore nella generazione del PDF:', error);
+    if (preview) {
+      const pdfBlob = doc.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank'); 
+      return pdfUrl;
+    } else {
+      doc.save('Glossario_Esercizi.pdf');
       toast({
-        title: 'Errore',
-        description: 'Impossibile generare il PDF',
-        variant: 'destructive'
+        title: 'PDF generato',
+        description: 'Il glossario esercizi è stato esportato in PDF',
       });
       return null;
     }
-  };
+  } catch (error) {
+    console.error('Errore generazione PDF:', error);
+    toast({
+      title: 'Errore',
+      description: 'Impossibile generare il PDF',
+      variant: 'destructive',
+    });
+    return null;
+  }
+};
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex space-x-2">
-          <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-2 w-full">
+          <div className="flex gap-2 w-full overflow-x-auto">
             <Button
-              onClick={() => generatePDF(true)} //LINEA ERRATA DOVREBBE ESSERE Anteprima su pagina a parte
+              onClick={() => generatePDF(true)}
               variant="outline"
               className="flex items-center gap-2 w-full"
             >
@@ -449,9 +434,12 @@ export function ExerciseGlossaryManager() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-2">
-                {exercise.description && (
+                {
+                exercise.description && (
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                    {exercise.description}
+                    {exercise.description.length > 70
+                    ? exercise.description.slice(0, 67) + "..."
+                    : exercise.description}
                   </p>
                 )}
                 {exercise.images && exercise.images.length > 0 && (

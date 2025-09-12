@@ -1,1 +1,1 @@
-npx serve dist/public -s
+npm run dev
