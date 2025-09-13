@@ -25,11 +25,6 @@ export function PremiumDialog({ open, onOpenChange, feature }: PremiumDialogProp
     'coach-settings': 'le impostazioni Coach'
   };
 
-  const handleLoginClick = () => {
-    onOpenChange(false);
-    setShowLoginDialog(true);
-  };
-
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -76,21 +71,18 @@ export function PremiumDialog({ open, onOpenChange, feature }: PremiumDialogProp
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="sm:w-auto w-full"
-            >
+              className="sm:w-auto w-full">
               Continua senza account
             </Button>
-            <Button 
-              onClick={handleLoginClick}
-              className="bg-gradient-primary hover:opacity-90 transition-opacity sm:w-auto w-full"
-            >
+            
+            <LoginDialog trigger={<Button 
+              className="bg-gradient-primary hover:opacity-90 transition-opacity sm:w-auto w-full">
               Crea account gratuito
-            </Button>
+            </Button>} />
+
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <LoginDialog trigger={<Button>Apri Login</Button>} />
     </>
   );
 }
