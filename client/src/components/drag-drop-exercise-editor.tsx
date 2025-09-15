@@ -350,7 +350,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-6 overflow-x-hidden">
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="weeks" type="week">
             {(provided) => (
@@ -371,7 +371,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                         {...provided.draggableProps}
                         className="glass-effect rounded-2xl p-4 mb-6 animate-fade-in"
                       >
-                        <div className="flex items-center mb-4">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center mb-4">
                           <div
                             {...provided.dragHandleProps}
                             className="mr-2 cursor-grab active:cursor-grabbing"
@@ -445,7 +445,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                     {...provided.draggableProps}
                                     className="border border-gray-100 dark:border-gray-700 rounded-lg p-4 bg-white/30 dark:bg-gray-900/30"
                                   >
-                                    <div className="flex items-center mb-3">
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center mb-3">
                                       <div
                                         {...provided.dragHandleProps}
                                         className="mr-2 cursor-grab active:cursor-grabbing"

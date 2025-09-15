@@ -244,8 +244,8 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
 
   return (
     <div className="lg:col-span-2">
-      <div className="glass-effect rounded-2xl p-6 mb-8 animate-fade-in">
-        <div className="flex items-center justify-between mb-6">
+      <div className="glass-effect rounded-2xl p-6 mb-8 animate-fade-in overflow-x-hidden">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             {existingWorkout ? 'Modifica Scheda' : 'Crea Nuova Scheda'}
           </h2>
@@ -417,13 +417,13 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
 
             {/* Weekly Progression */}
             <div>
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
                 <h3 className="hidden md:block text-lg font-semibold text-gray-900 dark:text-white">
                   Progressione Settimanale
                 </h3>
                 <div className="flex items-center gap-3">
-                  <Tabs value={editorMode} onValueChange={(value) => setEditorMode(value as 'form' | 'dragdrop')} className="w-auto">
-                    <TabsList className="grid w-[200px] grid-cols-2">
+                  <Tabs value={editorMode} onValueChange={(value) => setEditorMode(value as 'form' | 'dragdrop')} className="w-full md:w-auto">
+                    <TabsList className="grid w-full md:w-[200px] grid-cols-2">
                       <TabsTrigger value="form" className="flex items-center gap-1">
                         <List size={14} />
                         <span>Form</span>
@@ -438,7 +438,7 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
                     type="button"
                     onClick={addWeek}
                     size="sm"
-                    className="bg-emerald-500 hover:bg-emerald-600"
+                    className="bg-emerald-500 hover:bg-emerald-600 w-full md:w-auto"
                   >
                     <Plus className="mr-1" size={14} />
                     Aggiungi Settimana
