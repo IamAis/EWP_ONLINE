@@ -26,6 +26,8 @@ export function ExerciseGlossaryManager() {
   const [isEditing, setIsEditing] = useState(false);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [exerciseToDelete, setExerciseToDelete] = useState<ExerciseGlossary | null>(null);
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
  
@@ -150,22 +152,20 @@ export function ExerciseGlossaryManager() {
   };
 
   const handleDeleteExercise = async (id: string) => {
-    if (window.confirm('Sei sicuro di voler eliminare questo esercizio?')) {
-      try {
-        await dbOps.deleteExerciseGlossary(id);
-        toast({
-          title: 'Esercizio eliminato',
-          description: 'L\'esercizio è stato eliminato con successo'
-        });
-        loadExercises();
-      } catch (error) {
-        console.error('Errore nell\'eliminazione dell\'esercizio:', error);
-        toast({
-          title: 'Errore',
-          description: 'Impossibile eliminare l\'esercizio',
-          variant: 'destructive'
-        });
-      }
+    try {
+      await dbOps.deleteExerciseGlossary(id);
+      toast({
+        title: 'Esercizio eliminato',
+        description: 'L\'esercizio è stato eliminato con successo'
+      });
+      loadExercises();
+    } catch (error) {
+      console.error('Errore nell\'eliminazione dell\'esercizio:', error);
+      toast({
+        title: 'Errore',
+        description: 'Impossibile eliminare l\'esercizio',
+        variant: 'destructive'
+      });
     }
   };
 
@@ -426,7 +426,7 @@ const generatePDF = async (preview = false) => {
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0 text-red-500"
-                      onClick={() => handleDeleteExercise(exercise.id)}
+                      onClick={() => { setExerciseToDelete(exercise); setDeleteDialogOpen(true); }}
                     >
                       <Trash2 size={16} />
                     </Button>
@@ -465,6 +465,42 @@ const generatePDF = async (preview = false) => {
           ))}
         </div>
       )}
+
+      {/* Dialog conferma eliminazione esercizio */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Elimina esercizio</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Sei sicuro di voler eliminare "{exerciseToDelete?.name}"? Questa azione non può essere annullata.
+          </p>
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => { setDeleteDialogOpen(false); setExerciseToDelete(null); }}
+              className="flex-1"
+            >
+              Annulla
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={async () => {
+                if (exerciseToDelete?.id) {
+                  await handleDeleteExercise(exerciseToDelete.id);
+                }
+                setDeleteDialogOpen(false);
+                setExerciseToDelete(null);
+              }}
+              className="flex-1"
+            >
+              Elimina
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Dialog per creare/modificare esercizio */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

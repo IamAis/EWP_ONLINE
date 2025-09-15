@@ -143,6 +143,7 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
         />
         <div className="flex space-x-2">
           <Button 
+            type="button"
             size="sm" 
             variant="ghost"
             onClick={addDay}
@@ -189,6 +190,7 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
               />
               <div className="flex space-x-1">
                 <Button
+                  type="button"
                   size="sm"
                   variant="ghost"
                   onClick={() => openGlossarySelector(day.id)}
@@ -197,6 +199,7 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
                   <BookOpen size={12} />
                 </Button>
                 <Button
+                  type="button"
                   size="sm"
                   variant="ghost"
                   onClick={() => addExercise(day.id)}
@@ -205,6 +208,7 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
                   <Plus size={12} />
                 </Button>
                 <Button
+                  type="button"
                   size="sm"
                   variant="ghost"
                   onClick={() => removeDay(day.id)}

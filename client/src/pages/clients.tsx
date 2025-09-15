@@ -20,6 +20,8 @@ export default function Clients() {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showPremiumDialog, setShowPremiumDialog] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
@@ -90,20 +92,27 @@ export default function Clients() {
   };
 
   const handleDelete = async (client: Client) => {
-    if (window.confirm(`Sei sicuro di voler eliminare ${client.name}?`)) {
-      try {
-        await deleteClient.mutateAsync(client.id);
-        toast({
-          title: "Cliente eliminato",
-          description: `${client.name} è stato rimosso`
-        });
-      } catch (error) {
-        toast({
-          title: "Errore",
-          description: "Impossibile eliminare il cliente",
-          variant: "destructive"
-        });
-      }
+    setClientToDelete(client);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteClient = async () => {
+    if (!clientToDelete) return;
+    try {
+      await deleteClient.mutateAsync(clientToDelete.id);
+      toast({
+        title: "Cliente eliminato",
+        description: `${clientToDelete.name} è stato rimosso`
+      });
+    } catch (error) {
+      toast({
+        title: "Errore",
+        description: "Impossibile eliminare il cliente",
+        variant: "destructive"
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setClientToDelete(null);
     }
   };
 
@@ -363,6 +372,36 @@ export default function Clients() {
           </Button>
         </div>
       )}
+
+      {/* Dialog conferma eliminazione cliente */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Elimina cliente</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            Sei sicuro di voler eliminare "{clientToDelete?.name}"? Questa azione non può essere annullata.
+          </p>
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => { setDeleteDialogOpen(false); setClientToDelete(null); }}
+              className="flex-1"
+            >
+              Annulla
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={confirmDeleteClient}
+              className="flex-1"
+            >
+              Elimina
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

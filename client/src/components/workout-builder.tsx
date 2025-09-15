@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExerciseForm } from './exercise-form';
-import { Plus, Save, Eye, Download, Utensils, Users } from 'lucide-react';
+import DragDropExerciseEditor from './drag-drop-exercise-editor';
+import { Plus, Save, Eye, Download, Utensils, Users, LayoutGrid, List } from 'lucide-react';
 import { useCreateWorkout, useUpdateWorkout } from '@/hooks/use-workouts';
 import { useCoachProfile, useClients } from '@/hooks/use-clients';
 import { useToast } from '@/hooks/use-toast';
@@ -29,6 +31,7 @@ interface WorkoutBuilderProps {
 export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderProps) {
   const [weeks, setWeeks] = useState<Week[]>(existingWorkout?.weeks || []);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(existingWorkout?.clientId || null);
+  const [editorMode, setEditorMode] = useState<'form' | 'dragdrop'>('form');
   const { data: coachProfile } = useCoachProfile();
   const { data: clients } = useClients();
   const createWorkout = useCreateWorkout();
@@ -149,12 +152,10 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
           title: "Scheda aggiornata",
           description: "Le modifiche sono state salvate con successo"
         });
-        
         // Hard reset del form dopo l'aggiornamento
         setTimeout(() => {
           onSuccess?.();
         }, 100);
-        
       } else {
         // Create new workout - forza l'uso delle settimane attuali
         const workoutData: InsertWorkout = {
@@ -420,26 +421,47 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
                 <h3 className="hidden md:block text-lg font-semibold text-gray-900 dark:text-white">
                   Progressione Settimanale
                 </h3>
-                <Button 
-                  type="button"
-                  onClick={addWeek}
-                  size="sm"
-                  className="bg-emerald-500 hover:bg-emerald-600"
-                >
-                  <Plus className="mr-1" size={14} />
-                  Aggiungi Settimana
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Tabs value={editorMode} onValueChange={(value) => setEditorMode(value as 'form' | 'dragdrop')} className="w-auto">
+                    <TabsList className="grid w-[200px] grid-cols-2">
+                      <TabsTrigger value="form" className="flex items-center gap-1">
+                        <List size={14} />
+                        <span>Form</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="dragdrop" className="flex items-center gap-1">
+                        <LayoutGrid size={14} />
+                        <span>Drag & Drop</span>
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                  <Button 
+                    type="button"
+                    onClick={addWeek}
+                    size="sm"
+                    className="bg-emerald-500 hover:bg-emerald-600"
+                  >
+                    <Plus className="mr-1" size={14} />
+                    Aggiungi Settimana
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-4">
-                {weeks.map((week) => (
-                  <ExerciseForm
-                    key={week.id}
-                    week={week}
-                    onUpdateWeek={(updatedWeek) => updateWeek(week.id, updatedWeek)}
-                    onRemoveWeek={() => removeWeek(week.id)}
+                {editorMode === 'form' ? (
+                  weeks.map((week) => (
+                    <ExerciseForm
+                      key={week.id}
+                      week={week}
+                      onUpdateWeek={(updatedWeek) => updateWeek(week.id, updatedWeek)}
+                      onRemoveWeek={() => removeWeek(week.id)}
+                    />
+                  ))
+                ) : (
+                  <DragDropExerciseEditor
+                    weeks={weeks}
+                    onWeeksChange={(updatedWeeks) => setWeeks(updatedWeeks)}
                   />
-                ))}
+                )}
               </div>
             </div>
 
