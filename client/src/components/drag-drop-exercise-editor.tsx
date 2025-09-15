@@ -350,7 +350,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
 
   return (
     <>
-      <div className="space-y-6 overflow-x-hidden">
+      <div className="space-y-6 overflow-x-hidden px-2 sm:px-0">
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="weeks" type="week">
             {(provided) => (
@@ -369,12 +369,12 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
-                        className="glass-effect rounded-2xl p-4 mb-6 animate-fade-in"
+                        className="glass-effect rounded-2xl p-3 sm:p-4 mb-6 shadow-sm border border-gray-100 dark:border-gray-800 animate-fade-in"
                       >
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center mb-4">
                           <div
                             {...provided.dragHandleProps}
-                            className="mr-2 cursor-grab active:cursor-grabbing"
+                            className="mr-2 -ml-1 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
                           >
                             <GripVertical size={20} />
                           </div>
@@ -383,7 +383,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                             onChange={(e) =>
                               updateWeek(week.id, 'name', e.target.value)
                             }
-                            className="flex-1 text-lg font-semibold glass-effect bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                            className="flex-1 text-base sm:text-lg font-semibold glass-effect bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm"
                             placeholder="Nome Settimana"
                           />
                           <Button
@@ -395,7 +395,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                               try { localStorage.setItem('dde_collapsedWeeks', JSON.stringify(next)); } catch {}
                               return next;
                             })}
-                            className="ml-2"
+                            className="ml-0 sm:ml-2"
                           >
                             {collapsedWeeks[week.id] ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
                           </Button>
@@ -443,12 +443,12 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                   <div
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
-                                    className="border border-gray-100 dark:border-gray-700 rounded-lg p-4 bg-white/30 dark:bg-gray-900/30"
+                                    className="border border-gray-100 dark:border-gray-800 rounded-lg p-3 sm:p-4 bg-white/30 dark:bg-gray-900/30 shadow-sm"
                                   >
                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center mb-3">
                                       <div
                                         {...provided.dragHandleProps}
-                                        className="mr-2 cursor-grab active:cursor-grabbing"
+                                        className="mr-2 -ml-1 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
                                       >
                                         <GripVertical size={16} />
                                       </div>
@@ -475,7 +475,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                           try { localStorage.setItem('dde_collapsedDays', JSON.stringify(next)); } catch {}
                                           return next;
                                         })}
-                                        className="ml-2"
+                                        className="ml-0 sm:ml-2"
                                       >
                                         {collapsedDays[day.id] ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
                                       </Button>
@@ -484,7 +484,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => removeDay(week.id, day.id)}
-                                        className="ml-2 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/20"
+                                        className="ml-0 sm:ml-2 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/20"
                                       >
                                         <Minus size={16} />
                                       </Button>
@@ -529,12 +529,12 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                   <div
                                                     ref={provided.innerRef}
                                                     {...provided.draggableProps}
-                                                    className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3"
+                                                    className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2.5 sm:p-3 border border-gray-100 dark:border-gray-800"
                                                   >
-                                                    <div className="flex items-center mb-2">
+                                                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
                                                       <div
                                                         {...provided.dragHandleProps}
-                                                        className="mr-2 cursor-grab active:cursor-grabbing"
+                                                        className="mr-2 -ml-1 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
                                                       >
                                                         <GripVertical size={16} />
                                                       </div>
@@ -550,7 +550,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                             e.target.value
                                                           )
                                                         }
-                                                        className="flex-1 glass-effect bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                                                        className="flex-1 text-sm sm:text-base glass-effect bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm"
                                                         placeholder="Nome Esercizio"
                                                       />
                                                       <Button
@@ -560,7 +560,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                         onClick={() =>
                                                           openGlossarySelector(day.id, week.id)
                                                         }
-                                                        className="ml-2 text-xs px-2 py-0 h-8"
+                                                        className="ml-0 sm:ml-2 text-xs px-2 py-0 h-8"
                                                       >
                                                         <BookOpen size={12} className="mr-1" />
                                                         Glossario
@@ -575,13 +575,13 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                             exercise.id
                                                           )
                                                         }
-                                                        className="ml-1 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/20"
+                                                        className="ml-0 sm:ml-1 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/20"
                                                       >
                                                         <Minus size={16} />
                                                       </Button>
                                                     </div>
 
-                                                    <div className="grid grid-cols-3 gap-2">
+                                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                                       <div>
                                                         <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
                                                           Serie
@@ -599,7 +599,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                               parseInt(e.target.value)
                                                             )
                                                           }
-                                                          className="glass-effect bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                                                          className="glass-effect bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm"
                                                         />
                                                       </div>
                                                       <div>
@@ -617,7 +617,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                               e.target.value
                                                             )
                                                           }
-                                                          className="glass-effect bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                                                          className="glass-effect bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm"
                                                           placeholder="10-12"
                                                         />
                                                       </div>
@@ -636,13 +636,13 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                               e.target.value
                                                             )
                                                           }
-                                                          className="glass-effect bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                                                          className="glass-effect bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm"
                                                           placeholder="60"
                                                         />
                                                       </div>
                                                     </div>
 
-                                                    <div className="mt-2">
+                                                    <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
                                                       <Textarea
                                                         value={exercise.notes || ''}
                                                         onChange={(e) =>
@@ -655,8 +655,8 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                           )
                                                         }
                                                         placeholder="Note per questo esercizio..."
-                                                        className="glass-effect bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm resize-none"
-                                                        rows={1}
+                                                        className="glass-effect bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm resize-none"
+                                                        rows={2}
                                                       />
                                                     </div>
                                                   </div>
