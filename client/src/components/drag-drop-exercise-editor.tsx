@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -31,6 +31,20 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
       return raw ? JSON.parse(raw) : {};
     } catch { return {}; }
   });
+  // Rileva se siamo su mobile per disabilitare il drag & drop
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    try {
+      const mql = window.matchMedia('(pointer: coarse), (max-width: 640px)');
+      const update = () => setIsMobile(mql.matches);
+      update();
+      mql.addEventListener('change', update);
+      return () => mql.removeEventListener('change', update);
+    } catch {
+      setIsMobile(window.innerWidth <= 640);
+    }
+  }, []);
+
   // Funzione per generare un ID univoco
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -352,7 +366,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
     <>
       <div className="space-y-6 overflow-x-hidden px-2 sm:px-0">
         <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="weeks" type="week">
+          <Droppable droppableId="weeks" type="week" isDropDisabled={isMobile}>
             {(provided) => (
               <div
                 {...provided.droppableProps}
@@ -364,6 +378,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                     key={week.id}
                     draggableId={week.id}
                     index={weekIndex}
+                    isDragDisabled={isMobile}
                   >
                     {(provided) => (
                       <div
@@ -374,7 +389,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center mb-4">
                           <div
                             {...provided.dragHandleProps}
-                            className="mr-2 -ml-1 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
+                            className="hidden sm:block mr-2 ml-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
                           >
                             <GripVertical size={20} />
                           </div>
@@ -426,6 +441,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                           <Droppable
                             droppableId={`days::${week.id}`}
                             type="day"
+                            isDropDisabled={isMobile}
                           >
                           {(provided) => (
                             <div
@@ -438,6 +454,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                 key={day.id}
                                 draggableId={day.id}
                                 index={dayIndex}
+                                isDragDisabled={isMobile}
                               >
                                 {(provided) => (
                                   <div
@@ -448,7 +465,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center mb-3">
                                       <div
                                         {...provided.dragHandleProps}
-                                        className="mr-2 -ml-1 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
+                                        className="hidden sm:block mr-2 ml-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
                                       >
                                         <GripVertical size={16} />
                                       </div>
@@ -511,6 +528,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                       <Droppable
                                         droppableId={`exercises::${week.id}::${day.id}`}
                                         type="exercise"
+                                        isDropDisabled={isMobile}
                                       >
                                         {(provided) => (
                                           <div
@@ -524,6 +542,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                 key={exercise.id}
                                                 draggableId={exercise.id}
                                                 index={exerciseIndex}
+                                                isDragDisabled={isMobile}
                                               >
                                                 {(provided) => (
                                                   <div
@@ -534,7 +553,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                     <div className="flex items-center gap-2 sm:gap-3 mb-2">
                                                       <div
                                                         {...provided.dragHandleProps}
-                                                        className="mr-2 -ml-1 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
+                                                        className="hidden sm:block mr-2 ml-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
                                                       >
                                                         <GripVertical size={16} />
                                                       </div>

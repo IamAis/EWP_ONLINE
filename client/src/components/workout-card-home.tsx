@@ -75,9 +75,10 @@ export function WorkoutCardHome({ workout }: WorkoutCardHomeProps) {
             <Button
               size="sm"
               variant="ghost"
-              className="p-1 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+              className="p-3 h-12 w-12 sm:p-1 sm:h-8 sm:w-8 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+              aria-label="Visualizza"
             >
-              <Eye size={12} />
+              <Eye className="w-6 h-6 sm:w-4 sm:h-4" />
             </Button>
           </Link>
 
@@ -87,9 +88,10 @@ export function WorkoutCardHome({ workout }: WorkoutCardHomeProps) {
                 size="sm"
                 variant="ghost"
                 onClick={(e) => e.stopPropagation()}
-                className="p-1 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                className="p-3 h-12 w-12 sm:p-1 sm:h-8 sm:w-8 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+                aria-label="Modifica"
               >
-                <Edit size={12} />
+                <Edit className="w-6 h-6 sm:w-4 sm:h-4" />
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -110,9 +112,10 @@ export function WorkoutCardHome({ workout }: WorkoutCardHomeProps) {
               e.stopPropagation();
               handleExportPDF();
             }}
-            className="p-1 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+            className="p-3 h-12 w-12 sm:p-1 sm:h-8 sm:w-8 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+            aria-label="Esporta PDF"
           >
-            <FileText size={12} />
+            <FileText className="w-6 h-6 sm:w-4 sm:h-4" />
           </Button>
         </div>
         

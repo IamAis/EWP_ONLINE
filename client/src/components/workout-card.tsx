@@ -97,9 +97,10 @@ export function WorkoutCard({ workout, onEdit, onDuplicate }: WorkoutCardProps) 
             <Button
               size="sm"
               variant="ghost"
-              className="p-1 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+              className="p-3 h-12 w-12 sm:p-1 sm:h-8 sm:w-8 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+              aria-label="Visualizza"
             >
-              <Eye size={12} />
+              <Eye className="w-6 h-6 sm:w-4 sm:h-4" />
             </Button>
           </Link>
           
@@ -110,9 +111,10 @@ export function WorkoutCard({ workout, onEdit, onDuplicate }: WorkoutCardProps) 
               e.stopPropagation();
               onEdit?.(workout);
             }}
-            className="p-1 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+            className="p-3 h-12 w-12 sm:p-1 sm:h-8 sm:w-8 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
+            aria-label="Modifica"
           >
-            <Edit size={12} />
+            <Edit className="w-6 h-6 sm:w-4 sm:h-4" />
           </Button>
           
           <Button
@@ -122,9 +124,10 @@ export function WorkoutCard({ workout, onEdit, onDuplicate }: WorkoutCardProps) 
               e.stopPropagation();
               onDuplicate?.(workout);
             }}
-            className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+            className="p-3 h-12 w-12 sm:p-1 sm:h-8 sm:w-8 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+            aria-label="Duplica"
           >
-            <Copy size={12} />
+            <Copy className="w-6 h-6 sm:w-4 sm:h-4" />
           </Button>
           
           <Button
@@ -134,9 +137,10 @@ export function WorkoutCard({ workout, onEdit, onDuplicate }: WorkoutCardProps) 
               e.stopPropagation();
               handleExportPDF();
             }}
-            className="p-1 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+            className="p-3 h-12 w-12 sm:p-1 sm:h-8 sm:w-8 text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+            aria-label="Esporta PDF"
           >
-            <FileText size={12} />
+            <FileText className="w-6 h-6 sm:w-4 sm:h-4" />
           </Button>
 
           <AlertDialog>
@@ -145,9 +149,10 @@ export function WorkoutCard({ workout, onEdit, onDuplicate }: WorkoutCardProps) 
                 size="sm"
                 variant="ghost"
                 onClick={(e) => e.stopPropagation()}
-                className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                className="p-3 h-12 w-12 sm:p-1 sm:h-8 sm:w-8 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                aria-label="Elimina"
               >
-                <Trash2 size={12} />
+                <Trash2 className="w-6 h-6 sm:w-4 sm:h-4" />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
