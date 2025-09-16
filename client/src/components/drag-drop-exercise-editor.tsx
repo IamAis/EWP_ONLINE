@@ -553,7 +553,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                     <div className="flex items-center gap-2 sm:gap-3 mb-2">
                                                       <div
                                                         {...provided.dragHandleProps}
-                                                        className="hidden sm:block mr-2 ml-0 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
+                                                        className="mr-2 -ml-1 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
                                                       >
                                                         <GripVertical size={16} />
                                                       </div>

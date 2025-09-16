@@ -32,6 +32,21 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
   const [weeks, setWeeks] = useState<Week[]>(existingWorkout?.weeks || []);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(existingWorkout?.clientId || null);
   const [editorMode, setEditorMode] = useState<'form' | 'dragdrop'>('form');
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    try {
+      const mql = window.matchMedia('(pointer: coarse), (max-width: 640px)');
+      const update = () => setIsMobile(mql.matches);
+      update();
+      mql.addEventListener('change', update);
+      return () => mql.removeEventListener('change', update);
+    } catch {
+      setIsMobile(window.innerWidth <= 640);
+    }
+  }, []);
+  useEffect(() => {
+    if (isMobile && editorMode !== 'form') setEditorMode('form');
+  }, [isMobile, editorMode]);
   const { data: coachProfile } = useCoachProfile();
   const { data: clients } = useClients();
   const createWorkout = useCreateWorkout();
@@ -423,12 +438,17 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
                 </h3>
                 <div className="flex items-center gap-3">
                   <Tabs value={editorMode} onValueChange={(value) => setEditorMode(value as 'form' | 'dragdrop')} className="w-full md:w-auto">
-                    <TabsList className="grid w-full md:w-[200px] grid-cols-2">
+                    <TabsList className="grid w-full md:w-[220px] grid-cols-2">
                       <TabsTrigger value="form" className="flex items-center gap-1">
                         <List size={14} />
                         <span>Form</span>
                       </TabsTrigger>
-                      <TabsTrigger value="dragdrop" className="flex items-center gap-1">
+                      <TabsTrigger
+                        value="dragdrop"
+                        className="flex items-center gap-1 disabled:opacity-50"
+                        disabled={isMobile}
+                        onClick={(e) => { if (isMobile) e.preventDefault(); }}
+                      >
                         <LayoutGrid size={14} />
                         <span>Drag & Drop</span>
                       </TabsTrigger>
@@ -447,7 +467,7 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
               </div>
 
               <div className="space-y-4">
-                {editorMode === 'form' ? (
+                {(editorMode === 'form' || isMobile) ? (
                   weeks.map((week) => (
                     <ExerciseForm
                       key={week.id}
