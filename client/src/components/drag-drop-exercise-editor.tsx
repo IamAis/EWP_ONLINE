@@ -550,7 +550,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                     {...provided.draggableProps}
                                                     className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2.5 sm:p-3 border border-gray-100 dark:border-gray-800"
                                                   >
-                                                    <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 mb-2">
                                                       <div
                                                         {...provided.dragHandleProps}
                                                         className="mr-2 -ml-1 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 cursor-grab active:cursor-grabbing"
@@ -569,7 +569,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                             e.target.value
                                                           )
                                                         }
-                                                        className="flex-1 text-sm sm:text-base glass-effect bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm"
+                                                        className="w-full sm:flex-1 text-sm sm:text-base text-gray-900 dark:text-gray-100 glass-effect bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm"
                                                         placeholder="Nome Esercizio"
                                                       />
                                                       <Button
