@@ -383,6 +383,12 @@ export default function WorkoutDetail() {
                           <div className="md:hidden space-y-3">
                             {(day.exercises || []).map((exercise) => (
                               <div key={exercise.id} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 space-y-2 touch-action-manipulation">
+                                {/* Exercise name on mobile */}
+                                <div className="touch-action-manipulation">
+                                  <p className="text-sm font-semibold text-gray-900 dark:text-white break-words whitespace-normal">
+                                    {exercise.name}
+                                  </p>
+                                </div>
                                 <div className="grid grid-cols-2 gap-2 text-xs touch-action-manipulation">
                                   <div className="touch-action-manipulation">
                                     <span className="font-medium text-gray-600 dark:text-gray-400">Serie:</span>
