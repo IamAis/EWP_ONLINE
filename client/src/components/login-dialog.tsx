@@ -65,7 +65,7 @@ export function LoginDialog({ trigger }: { trigger: React.ReactNode }) {
                                 setTimeout(() => {
                                         setOpen(false);
                                         resetForm();
-                                        window.location.reload();
+                                        //window.location.reload();
                                 }, 400);
                         }
                 }
