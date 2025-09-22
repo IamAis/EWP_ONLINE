@@ -59,6 +59,7 @@ export const workoutSchema = z.object({
   level: z.enum(["Neofita", "Principiante", "Intermedio", "Avanzato"]).optional(), // Nuovo campo livello
   duration: z.number().min(1, "Durata richiesta"),
   description: z.string().optional(),
+  clientComment: z.string().optional(), // Commento specifico del coach per questo cliente/scheda
   dietaryAdvice: z.string().optional(),
   weeks: z.array(weekSchema),
   createdAt: z.date(),

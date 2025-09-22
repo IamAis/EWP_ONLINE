@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Search, User, Mail, Phone, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, User, Mail, Phone, Edit, Trash2, FileText, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -13,15 +13,23 @@ import { useToast } from '@/hooks/use-toast';
 import { usePremium } from '@/hooks/use-premium';
 import { PremiumDialog } from '@/components/premium-dialog';
 import { insertClientSchema, type InsertClient, type Client } from '@shared/schema';
+import { useWorkouts, useUpdateWorkout } from '@/hooks/use-workouts';
+import { Link } from 'wouter';
 
 export default function Clients() {
   const { data: clients = [], isLoading } = useClients();
+  const { data: workouts = [] } = useWorkouts();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
+  const [workoutsDialogOpen, setWorkoutsDialogOpen] = useState(false);
+  const [selectedClientForWorkouts, setSelectedClientForWorkouts] = useState<Client | null>(null);
+  const [commentValues, setCommentValues] = useState<Record<string, string>>({});
+  const [savingComments, setSavingComments] = useState<Record<string, boolean>>({});
+  const updateWorkout = useUpdateWorkout();
   
   const createClient = useCreateClient();
   const updateClient = useUpdateClient();
@@ -137,6 +145,42 @@ export default function Clients() {
       notes: client.notes || ''
     });
     setIsDialogOpen(true);
+  };
+
+  const openWorkoutsDialog = (client: Client) => {
+    setSelectedClientForWorkouts(client);
+    setWorkoutsDialogOpen(true);
+    // Inizializza i valori dei commenti per questo cliente
+    const clientWorkouts = workouts.filter(w => w.clientName === client.name);
+    const initialComments: Record<string, string> = {};
+    clientWorkouts.forEach(w => {
+      initialComments[w.id] = w.clientComment || '';
+    });
+    setCommentValues(initialComments);
+  };
+
+  const saveComment = async (workoutId: string) => {
+    const commentValue = commentValues[workoutId] || '';
+    setSavingComments(prev => ({ ...prev, [workoutId]: true }));
+    
+    try {
+      await updateWorkout.mutateAsync({ 
+        id: workoutId, 
+        updates: { clientComment: commentValue } 
+      });
+      toast({ 
+        title: 'Commento salvato', 
+        description: 'Il commento è stato salvato con successo' 
+      });
+    } catch {
+      toast({ 
+        title: 'Errore', 
+        description: 'Impossibile salvare il commento', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setSavingComments(prev => ({ ...prev, [workoutId]: false }));
+    }
   };
 
   if (isLoading) {
@@ -310,6 +354,15 @@ export default function Clients() {
                   <div className="flex space-x-1">
                     <Button
                       size="sm"
+                      onClick={() => openWorkoutsDialog(client)}
+                      className="px-3 py-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white text-xs font-medium rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+                      title="Visualizza schede"
+                    >
+                      <FileText size={12} className="mr-1" />
+                      Schede
+                    </Button>
+                    <Button
+                      size="sm"
                       variant="ghost"
                       onClick={() => handleEdit(client)}
                       className="p-1 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
@@ -398,6 +451,97 @@ export default function Clients() {
               className="flex-1"
             >
               Elimina
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog schede cliente */}
+      <Dialog open={workoutsDialogOpen} onOpenChange={setWorkoutsDialogOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Schede di {selectedClientForWorkouts?.name}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {selectedClientForWorkouts && (workouts.filter(w => w.clientName === selectedClientForWorkouts.name)).length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">
+                  Nessuna scheda per questo cliente
+                </p>
+              </div>
+            ) : (
+              selectedClientForWorkouts && (workouts.filter(w => w.clientName === selectedClientForWorkouts.name)).map((w) => (
+                <div key={w.id} className="p-4 rounded-lg bg-white/40 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-base font-medium text-gray-900 dark:text-white">
+                      {w.name || w.workoutType} • {w.duration} settimane
+                    </span>
+                    <Link href={`/workout/${w.id}`}>
+                      <Button size="sm" variant="outline" className="text-xs">
+                        Apri Scheda
+                      </Button>
+                    </Link>
+                  </div>
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
+                        Commenti del cliente
+                      </label>
+                      <div className="space-y-2">
+                        <textarea
+                          value={commentValues[w.id] || ''}
+                          onChange={(e) => {
+                            setCommentValues(prev => ({
+                              ...prev,
+                              [w.id]: e.target.value
+                            }));
+                          }}
+                          placeholder="Aggiungi un commento per questa scheda..."
+                          className="w-full text-sm p-3 rounded-md border bg-white/70 dark:bg-gray-900/40 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                          rows={3}
+                        />
+                        <div className="flex justify-end">
+                          <Button
+                            size="sm"
+                            onClick={() => saveComment(w.id)}
+                            disabled={savingComments[w.id] || commentValues[w.id] === (w.clientComment || '')}
+                            className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-1 text-xs"
+                          >
+                            {savingComments[w.id] ? (
+                              <>
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                                Salvando...
+                              </>
+                            ) : (
+                              <>
+                                <Save size={12} className="mr-1" />
+                                Salva Commento
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          
+          <div className="flex justify-end pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => {
+                setWorkoutsDialogOpen(false);
+                setSelectedClientForWorkouts(null);
+              }}
+            >
+              Chiudi
             </Button>
           </div>
         </DialogContent>
