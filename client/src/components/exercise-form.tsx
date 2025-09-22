@@ -4,7 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Minus, Trash2, Calendar, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 import { ExerciseGlossarySelector } from '@/components/exercise-glossary-selector';
+import { PremiumDialog } from '@/components/premium-dialog';
 import type { Week, Exercise, Day } from '@shared/schema';
 import type { ExerciseGlossary } from '@shared/schema';
 
@@ -21,7 +23,9 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
   });
   const [glossarySelectorOpen, setGlossarySelectorOpen] = useState(false);
   const [currentDayId, setCurrentDayId] = useState<string | null>(null);
+  const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const addDay = () => {
     const newDay: Day = {
@@ -74,6 +78,10 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
   };
 
   const openGlossarySelector = (dayId: string) => {
+    if (!user) {
+      setShowPremiumDialog(true);
+      return;
+    }
     setCurrentDayId(dayId);
     setGlossarySelectorOpen(true);
   };
@@ -90,12 +98,8 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
       rest: '',
       notes: '',
       order: 0,
-      // campi extra → se non definiti nel type Exercise devi estendere il tipo
-      glossaryId: glossaryExercise.id,
-      glossaryContent: {
-        description: glossaryExercise.description || '',
-        images: glossaryExercise.images || []
-      }
+      // Importiamo solo il nome, senza descrizione e immagini
+      glossaryId: glossaryExercise.id
     } as Exercise;
 
     const day = (localWeek.days || []).find(d => d.id === currentDayId);
@@ -292,33 +296,6 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
                     <Minus size={16} className="md:w-3 md:h-3" />
                     <span className="ml-1 md:hidden text-sm">Rimuovi</span>
                   </Button>
-
-                  {/* Glossario se presente */}
-                  {exercise.glossaryContent && (
-                    <div className="mt-2 p-2 rounded-lg text-xs bg-blue-50 dark:bg-blue-900/10">
-                      {exercise.glossaryContent.description && (
-                        <p className="text-gray-700 dark:text-gray-300 mb-2">
-                          {exercise.glossaryContent.description}
-                        </p>
-                      )}
-                      {exercise.glossaryContent.images?.length > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                          {exercise.glossaryContent.images.map((img, index) => (
-                            <div
-                              key={index}
-                              className="relative w-16 h-16 rounded overflow-hidden bg-gray-100 dark:bg-gray-800"
-                            >
-                              <img
-                                src={img}
-                                alt={`${exercise.name} - immagine ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -355,6 +332,13 @@ export function ExerciseForm({ week, onUpdateWeek, onRemoveWeek }: ExerciseFormP
         onOpenChange={setGlossarySelectorOpen}
         onSelectExercise={handleSelectGlossaryExercise}
         currentDayId={currentDayId || undefined}
+      />
+      
+      {/* Premium Dialog */}
+      <PremiumDialog 
+        open={showPremiumDialog} 
+        onOpenChange={setShowPremiumDialog} 
+        feature="glossary" 
       />
     </div>
   );

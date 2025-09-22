@@ -6,6 +6,8 @@ import { Textarea } from './ui/textarea';
 import { Plus, Minus, GripVertical, Calendar, Dumbbell, BookOpen, ChevronDown, ChevronRight } from 'lucide-react';
 import { Exercise, Day, Week, ExerciseGlossary } from '@shared/schema';
 import { ExerciseGlossarySelector } from './exercise-glossary-selector';
+import { useAuth } from '../hooks/use-auth';
+import { PremiumDialog } from './premium-dialog';
 
 interface DragDropExerciseEditorProps {
   weeks: Week[];
@@ -16,9 +18,11 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
   weeks,
   onWeeksChange,
 }) => {
+  const { user } = useAuth();
   const [glossarySelectorOpen, setGlossarySelectorOpen] = useState(false);
   const [currentDayId, setCurrentDayId] = useState<string | null>(null);
   const [currentWeekId, setCurrentWeekId] = useState<string | null>(null);
+  const [showPremiumDialog, setShowPremiumDialog] = useState(false);
   const [collapsedWeeks, setCollapsedWeeks] = useState<Record<string, boolean>>(() => {
     try {
       const raw = localStorage.getItem('dde_collapsedWeeks');
@@ -146,6 +150,10 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
   };
   
   const openGlossarySelector = (dayId: string, weekId: string) => {
+    if (!user) {
+      setShowPremiumDialog(true);
+      return;
+    }
     setCurrentDayId(dayId);
     setCurrentWeekId(weekId);
     setGlossarySelectorOpen(true);
@@ -162,11 +170,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
       order: 0,
       rest: '60',
       notes: '',
-      glossaryId: glossaryExercise.id,
-      glossaryContent: {
-        description: glossaryExercise.description || '',
-        images: glossaryExercise.images || []
-      }
+      glossaryId: glossaryExercise.id
     };  
 
     const updatedWeeks = weeks.map((week) =>
@@ -741,6 +745,12 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
         open={glossarySelectorOpen}
         onOpenChange={setGlossarySelectorOpen}
         onSelectExercise={handleSelectGlossaryExercise}
+      />
+      
+      <PremiumDialog
+        open={showPremiumDialog}
+        onOpenChange={setShowPremiumDialog}
+        feature="glossary"
       />
     </>
   );

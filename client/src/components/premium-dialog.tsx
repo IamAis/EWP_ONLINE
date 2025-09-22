@@ -13,7 +13,7 @@ import { LoginDialog } from './login-dialog';
 type PremiumDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  feature?: 'workouts' | 'clients' | 'coach-settings';
+  feature?: 'workouts' | 'clients' | 'coach-settings' | 'glossary';
 };
 
 export function PremiumDialog({ open, onOpenChange, feature }: PremiumDialogProps) {
@@ -22,7 +22,8 @@ export function PremiumDialog({ open, onOpenChange, feature }: PremiumDialogProp
   const featureText = {
     'workouts': 'più di 3 schede di allenamento',
     'clients': 'più di 2 clienti',
-    'coach-settings': 'le impostazioni Coach'
+    'coach-settings': 'le impostazioni Coach',
+    'glossary': 'il Glossario degli Esercizi'
   };
 
   return (

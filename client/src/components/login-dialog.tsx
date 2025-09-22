@@ -95,7 +95,7 @@ export function LoginDialog({ trigger }: { trigger: React.ReactNode }) {
         return (
                 <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) resetForm(); }}>
                         <DialogTrigger asChild>{trigger}</DialogTrigger>
-                        <DialogContent onInteractOutside={(e) => e.preventDefault()}>
+                        <DialogContent onInteractOutside={(e) => e.preventDefault()} className="sm:max-w-xl">
                                 <DialogHeader>
                                         <DialogTitle>{mode === 'login' ? 'Login' : 'Registrazione'}</DialogTitle>
                                         <DialogDescription>

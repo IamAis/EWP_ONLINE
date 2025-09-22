@@ -187,9 +187,13 @@ export default function WorkoutDetail() {
                     <FileText size={16} className="mr-2" />
                     Esporta PDF
                   </Button>
-                  <Button onClick={handleExportWithGlossary} className="glass-effect bg-gradient-primary hover:opacity-90 transition-opacity text-white">
-                    <Download size={16} className="mr-2" />
-                    Esporta con Esercizi
+                  <Button 
+                    onClick={handleExportWithGlossary} 
+                    className="relative overflow-hidden bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 text-white font-semibold px-6 py-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                    <Download size={16} className="mr-2 relative z-10" />
+                    <span className="relative z-10">Esporta con Esercizi</span>
                   </Button>
                 </div>
               </>
@@ -245,10 +249,14 @@ export default function WorkoutDetail() {
                   <FileText size={16} className="mr-2" />
                   Esporta PDF
                 </Button>
-                <Button onClick={handleExportWithGlossary} className="w-full glass-effect bg-gradient-primary hover:opacity-90 transition-opacity text-white touch-action-manipulation">
-                   <Download size={16} className="mr-2" />
-                   Esporta con Esercizi
-                 </Button>
+                <Button 
+                  onClick={handleExportWithGlossary} 
+                  className="w-full relative overflow-hidden bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 text-white font-semibold px-6 py-3.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 touch-action-manipulation border-0 min-h-[52px]"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                  <Download size={18} className="mr-2 relative z-10" />
+                  <span className="relative z-10 text-base">Esporta con Esercizi</span>
+                </Button>
               </>
             )}
           </div>
