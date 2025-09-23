@@ -3,11 +3,14 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
-import { Plus, Minus, GripVertical, Calendar, Dumbbell, BookOpen, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, Minus, GripVertical, Calendar, Dumbbell, BookOpen, ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
 import { Exercise, Day, Week, ExerciseGlossary } from '@shared/schema';
 import { ExerciseGlossarySelector } from './exercise-glossary-selector';
 import { useAuth } from '../hooks/use-auth';
-import { PremiumDialog } from './premium-dialog';
+
+import { LoginDialogControlled } from './login-dialog-controlled';
+import { usePDFGenerator } from '../hooks/use-pdf-generator';
+import type { Workout } from '@shared/schema';
 
 interface DragDropExerciseEditorProps {
   weeks: Week[];
@@ -19,10 +22,18 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
   onWeeksChange,
 }) => {
   const { user } = useAuth();
+  const pdfGenerator = usePDFGenerator();
   const [glossarySelectorOpen, setGlossarySelectorOpen] = useState(false);
   const [currentDayId, setCurrentDayId] = useState<string | null>(null);
   const [currentWeekId, setCurrentWeekId] = useState<string | null>(null);
-  const [showPremiumDialog, setShowPremiumDialog] = useState(false);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(() => {
+    try {
+      return localStorage.getItem('dde_showPreview') === 'true';
+    } catch { return false; }
+  });
   const [collapsedWeeks, setCollapsedWeeks] = useState<Record<string, boolean>>(() => {
     try {
       const raw = localStorage.getItem('dde_collapsedWeeks');
@@ -49,11 +60,84 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
     }
   }, []);
 
+  // Salva la preferenza dell'anteprima
+  useEffect(() => {
+    try {
+      localStorage.setItem('dde_showPreview', showPreview.toString());
+    } catch {}
+  }, [showPreview]);
+
+  // Cleanup dell'URL del PDF quando il componente viene smontato
+  useEffect(() => {
+    return () => {
+      if (pdfPreviewUrl) {
+        URL.revokeObjectURL(pdfPreviewUrl);
+      }
+    };
+  }, [pdfPreviewUrl]);
+
+  // Genera l'anteprima PDF quando cambiano le settimane o quando viene attivata l'anteprima
+  useEffect(() => {
+    if (showPreview && weeks.length > 0) {
+      generatePdfPreview();
+    } else {
+      // Pulisci l'URL quando l'anteprima è disattivata
+      if (pdfPreviewUrl) {
+        URL.revokeObjectURL(pdfPreviewUrl);
+        setPdfPreviewUrl(null);
+      }
+    }
+  }, [showPreview, weeks]);
+
+  const generatePdfPreview = async () => {
+    if (!showPreview || weeks.length === 0) return;
+    
+    setIsGeneratingPreview(true);
+    try {
+      // Crea un workout temporaneo per la preview
+      const tempWorkout: Workout = {
+        id: 'preview',
+        clientName: 'Anteprima Cliente',
+        coachId: user?.id || '',
+        workoutType: 'Scheda Personalizzata',
+        description: 'Anteprima in tempo reale',
+        weeks: weeks,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Genera il PDF
+      const pdfBlob = await pdfGenerator.generateWorkoutPDF(tempWorkout);
+      
+      // Revoca l'URL precedente se esiste
+      if (pdfPreviewUrl) {
+        URL.revokeObjectURL(pdfPreviewUrl);
+      }
+      
+      // Crea un nuovo URL per il blob
+      const newUrl = URL.createObjectURL(pdfBlob);
+      setPdfPreviewUrl(newUrl);
+    } catch (error) {
+      console.error('Errore nella generazione dell\'anteprima PDF:', error);
+    } finally {
+      setIsGeneratingPreview(false);
+    }
+  };
+
   // Funzione per generare un ID univoco
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
+  // Funzione helper per mostrare il dialog di login
+  const requireAuth = () => {
+    setShowLoginDialog(true);
+  };
+
   // Funzioni per la gestione delle settimane
   const addWeek = () => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
     const newWeek: Week = {
       number: weeks.length + 1,
       id: generateId(),
@@ -65,6 +149,10 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
   };
 
   const updateWeek = (weekId: string, field: keyof Week, value: any) => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
     const updatedWeeks = weeks.map((week) =>
       week.id === weekId ? { ...week, [field]: value } : week
     );
@@ -72,12 +160,20 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
   };
 
   const removeWeek = (weekId: string) => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
     const updatedWeeks = weeks.filter((week) => week.id !== weekId);
     onWeeksChange(updatedWeeks);
   };
 
   // Funzioni per la gestione dei giorni
   const addDay = (weekId: string) => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
     const newDay: Day = {
       id: generateId(),
       name: 'Nuovo Giorno',
@@ -94,6 +190,10 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
   };
 
   const updateDay = (weekId: string, dayId: string, field: keyof Day, value: any) => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
     const updatedWeeks = weeks.map((week) =>
       week.id === weekId
         ? {
@@ -108,6 +208,10 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
   };
 
   const removeDay = (weekId: string, dayId: string) => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
     const updatedWeeks = weeks.map((week) =>
       week.id === weekId
         ? {
@@ -121,6 +225,10 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
 
   // Funzioni per la gestione degli esercizi
   const addExercise = (weekId: string, dayId: string) => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
     const newExercise: Exercise = {
       id: generateId(),
       name: '',
@@ -151,7 +259,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
   
   const openGlossarySelector = (dayId: string, weekId: string) => {
     if (!user) {
-      setShowPremiumDialog(true);
+      requireAuth();
       return;
     }
     setCurrentDayId(dayId);
@@ -198,6 +306,10 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
     field: keyof Exercise,
     value: any
   ) => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
     const updatedWeeks = weeks.map((week) =>
       week.id === weekId
         ? {
@@ -221,6 +333,10 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
   };
 
   const removeExercise = (weekId: string, dayId: string, exerciseId: string) => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
     const updatedWeeks = weeks.map((week) =>
       week.id === weekId
         ? {
@@ -243,6 +359,11 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
 
   // Gestione del drag and drop
   const handleDragEnd = (result: any) => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
+    
     const { source, destination, type } = result;
 
     // Dropped outside the list
@@ -366,10 +487,86 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
     }
   };
 
+  // Se l'utente non è loggato, mostra solo il messaggio di autenticazione
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px] bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700">
+        <div className="text-center p-8">
+          <div className="mb-6">
+            <div className="w-16 h-16 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
+              <Dumbbell className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              Accesso Richiesto
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Per utilizzare l'editor Drag & Drop devi essere registrato e aver effettuato l'accesso.
+            </p>
+          </div>
+          
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
-      <div className="space-y-6 overflow-x-hidden px-2 sm:px-0">
-        <DragDropContext onDragEnd={handleDragEnd}>
+      <div className={`${showPreview ? 'flex gap-4 h-screen w-screen fixed top-0 left-0 z-40 bg-white dark:bg-gray-900' : 'w-full'}`}>
+        {/* PDF Preview Panel - Ora a sinistra */}
+        {showPreview && (
+          <div className="w-1/2 border-r border-gray-200 dark:border-gray-700 pr-4 h-full overflow-hidden">
+            <div className="h-full flex flex-col p-4">
+              <div className="flex items-center justify-between mb-4 px-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Anteprima PDF
+                </h3>
+                <div className="flex items-center gap-2">
+                  {isGeneratingPreview && (
+                    <div className="flex items-center text-sm text-gray-500">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                      Generando...
+                    </div>
+                  )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPreview(false)}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    title="Chiudi anteprima"
+                  >
+                    <EyeOff size={16} />
+                  </Button>
+                </div>
+              </div>
+              
+              {pdfPreviewUrl ? (
+                <iframe
+                  src={pdfPreviewUrl}
+                  className="w-full flex-1 border border-gray-300 dark:border-gray-600 rounded-lg"
+                  title="Anteprima PDF Workout"
+                />
+              ) : (
+                <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-300 dark:border-gray-600">
+                  <div className="text-center">
+                    <div className="w-16 h-16 mx-auto bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                      <Eye className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      {weeks.length === 0 
+                        ? 'Aggiungi delle settimane per vedere l\'anteprima' 
+                        : 'Generazione anteprima in corso...'}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Editor Panel - Ora a destra */}
+        <div className={`${showPreview ? 'w-1/2 h-full overflow-y-auto p-4' : 'w-full'} space-y-6 overflow-x-hidden`}>
+          <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="weeks" type="week" isDropDisabled={isMobile}>
             {(provided) => (
               <div
@@ -729,17 +926,33 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
             </div>
           )}
         </Droppable>
-      </DragDropContext>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addWeek}
+              className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 dark:border-blue-800 dark:hover:bg-blue-900/20"
+            >
+              <Plus size={16} className="mr-1" /> Aggiungi Settimana
+            </Button>
+          </DragDropContext>
+        </div>
+      </div>
 
+      {/* Floating Toggle Button */}
       <Button
         type="button"
         variant="outline"
-        onClick={addWeek}
-        className="w-full text-blue-600 border-blue-200 hover:bg-blue-50 dark:border-blue-800 dark:hover:bg-blue-900/20"
+        size="lg"
+        onClick={() => {
+          const newShowPreview = !showPreview;
+          setShowPreview(newShowPreview);
+          localStorage.setItem('dde_showPreview', JSON.stringify(newShowPreview));
+        }}
+        className="fixed bottom-4 right-4 z-50 bg-white dark:bg-gray-800 shadow-lg border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
       >
-        <Plus size={16} className="mr-1" /> Aggiungi Settimana
+        {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
+        <span className="ml-2">{showPreview ? 'Nascondi' : 'Anteprima'}</span>
       </Button>
-      </div>
       
       <ExerciseGlossarySelector
         open={glossarySelectorOpen}
@@ -747,10 +960,9 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
         onSelectExercise={handleSelectGlossaryExercise}
       />
       
-      <PremiumDialog
-        open={showPremiumDialog}
-        onOpenChange={setShowPremiumDialog}
-        feature="glossary"
+      <LoginDialogControlled
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
       />
     </>
   );

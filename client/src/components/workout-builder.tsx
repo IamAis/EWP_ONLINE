@@ -26,9 +26,10 @@ const formSchema = insertWorkoutSchema.extend({
 interface WorkoutBuilderProps {
   existingWorkout?: Workout;
   onSuccess?: () => void;
+  isFullscreen?: boolean;
 }
 
-export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderProps) {
+export function WorkoutBuilder({ existingWorkout, onSuccess, isFullscreen = false }: WorkoutBuilderProps) {
   const [weeks, setWeeks] = useState<Week[]>(existingWorkout?.weeks || []);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(existingWorkout?.clientId || null);
   const [editorMode, setEditorMode] = useState<'form' | 'dragdrop'>('form');
@@ -258,16 +259,21 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
   };
 
   return (
-    <div className="lg:col-span-2">
-      <div className="glass-effect rounded-2xl p-6 mb-8 animate-fade-in overflow-x-hidden">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {existingWorkout ? 'Modifica Scheda' : 'Crea Nuova Scheda'}
-          </h2>
-        </div>
+    <div className={isFullscreen ? "h-full" : "lg:col-span-2"}>
+      <div className={isFullscreen 
+        ? "h-full flex flex-col overflow-x-hidden" 
+        : "glass-effect rounded-2xl p-6 mb-8 animate-fade-in overflow-x-hidden"
+      }>
+        {!isFullscreen && (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {existingWorkout ? 'Modifica Scheda' : 'Crea Nuova Scheda'}
+            </h2>
+          </div>
+        )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className={isFullscreen ? "space-y-6 flex-1 flex flex-col" : "space-y-6"}>
             {/* Nome Scheda */}
             <div className="mb-6">
               <FormField
@@ -466,7 +472,7 @@ export function WorkoutBuilder({ existingWorkout, onSuccess }: WorkoutBuilderPro
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className={isFullscreen && editorMode === 'dragdrop' ? "flex-1 min-h-0" : "space-y-4"}>
                 {(editorMode === 'form' || isMobile) ? (
                   weeks.map((week) => (
                     <ExerciseForm

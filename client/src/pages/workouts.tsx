@@ -139,16 +139,35 @@ export default function Workouts() {
         feature="workouts" 
       />
 
-      {/* Edit Dialog */}
+      {/* Edit Modal */}
       {editingWorkout && (
-        <Dialog open={!!editingWorkout} onOpenChange={() => setEditingWorkout(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Modifica Scheda - {editingWorkout.clientName}</DialogTitle>
-            </DialogHeader>
-            <WorkoutBuilder existingWorkout={editingWorkout} onSuccess={() => setEditingWorkout(null)} />
-          </DialogContent>
-        </Dialog>
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 rounded-t-2xl bg-white dark:bg-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Modifica Scheda - {editingWorkout.clientName}
+              </h1>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditingWorkout(null)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-xl font-bold h-10 w-10"
+              >
+                ✕
+              </Button>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <WorkoutBuilder 
+                existingWorkout={editingWorkout} 
+                onSuccess={() => setEditingWorkout(null)}
+                isFullscreen={true}
+              />
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Search and Filter */}
