@@ -583,12 +583,6 @@ export default function Settings() {
                   <p className="text-sm text-gray-600 dark:text-gray-400">Clienti</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {backupStats.exerciseGlossaryCount}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Esercizi</p>
-                </div>
-                <div className="text-center">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     {backupStats.lastBackup 
                       ? `Ultimo backup: ${backupStats.lastBackup.toLocaleDateString('it-IT')}`

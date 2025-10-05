@@ -6,8 +6,83 @@ import {
   insertClientSchema, 
   insertCoachProfileSchema 
 } from "@shared/schema";
+import { createCheckoutSession, createCustomer } from './stripe';
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2025-09-30.clover'
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Payment routes
+  app.post("/api/create-checkout-session", async (req, res) => {
+  try {
+    const { email, priceId, successUrl, cancelUrl, customerName } = req.body;
+
+    if (!email || !priceId || !successUrl || !cancelUrl) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const session = await createCheckoutSession({
+      email,
+      priceId,
+      successUrl,
+      cancelUrl,
+      customerName,
+    });
+
+    res.json({ sessionId: session.id }); // ✅ session.id, non session.url
+  } catch (error) {
+    console.error("Error creating checkout session:", error);
+    res.status(500).json({ message: "Failed to create checkout session" });
+  }
+});
+
+
+  app.post("/api/subscription-success", async (req, res) => {
+    try {
+      const { session_id } = req.query;
+      const session = await stripe.checkout.sessions.retrieve(session_id as string);
+      const customerResponse = await stripe.customers.retrieve(session.customer as string);
+      
+      if ('deleted' in customerResponse) {
+        return res.status(400).json({ message: "Customer was deleted" });
+      }
+
+      const customer = customerResponse as Stripe.Customer;
+      
+      if (customer.email) {
+        // Create the user account in Supabase
+        const { data: userData, error: userError } = await supabase.auth.admin.createUser({
+          email: customer.email,
+          email_confirm: true,
+          user_metadata: {
+            stripe_customer_id: customer.id,
+            is_paid: true
+          }
+        });
+
+        if (userError) {
+          console.error("Error creating user:", userError);
+          return res.status(500).json({ message: "Failed to create user account" });
+        }
+
+        // Redirect to the success page
+        res.redirect(process.env.VITE_STRIPE_SUCCESS_URL || '/');
+      } else {
+        res.status(400).json({ message: "No email found in customer data" });
+      }
+    } catch (error) {
+      console.error("Error handling subscription success:", error);
+      res.status(500).json({ message: "Failed to process subscription" });
+    }
+  });
   // Workout routes
   app.get("/api/workouts", async (req, res) => {
     try {

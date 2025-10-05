@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import { Plus, Upload, Download, Users, Smartphone, Settings, Dumbbell, FileText } from 'lucide-react';
+import { Plus, Upload, Download, Users, Smartphone, Settings, Dumbbell, FileText, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatsCards } from '@/components/stats-cards';
@@ -92,6 +92,22 @@ export default function Home() {
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm">
                 Aggiungi e gestisci i tuoi clienti
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/about">
+          <Card className="glass-effect rounded-2xl hover:scale-105 transition-all duration-300 cursor-pointer group">
+            <CardContent className="p-6 text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <Info className="text-white" size={32} />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Chi Siamo
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                Scopri di più sul nostro progetto
               </p>
             </CardContent>
           </Card>

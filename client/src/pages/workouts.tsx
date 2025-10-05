@@ -3,7 +3,6 @@ import { Plus, Search, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { WorkoutCard } from '@/components/workout-card';
 import { WorkoutBuilder } from '@/components/workout-builder';
 import { useWorkouts, useCreateWorkout } from '@/hooks/use-workouts';
@@ -115,21 +114,13 @@ export default function Workouts() {
             Gestisci e organizza le tue schede workout
           </p>
         </div>
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <Button 
-            className="bg-gradient-primary hover:opacity-90 transition-opacity h-12 px-6 text-lg font-semibold"
-            onClick={handleCreateWorkout}
-          >
-            <Plus className="mr-2" size={18} />
-            Nuova Scheda
-          </Button>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Crea Nuova Scheda</DialogTitle>
-            </DialogHeader>
-            <WorkoutBuilder onSuccess={() => setShowCreateDialog(false)} />
-          </DialogContent>
-        </Dialog>
+        <Button 
+          className="bg-gradient-primary hover:opacity-90 transition-opacity h-12 px-6 text-lg font-semibold"
+          onClick={handleCreateWorkout}
+        >
+          <Plus className="mr-2" size={18} />
+          Nuova Scheda
+        </Button>
       </div>
 
       {/* Premium Dialog */}
@@ -138,6 +129,36 @@ export default function Workouts() {
         onOpenChange={setShowPremiumDialog} 
         feature="workouts" 
       />
+
+      {/* Create Modal */}
+      {showCreateDialog && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-7xl h-[90vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 rounded-t-2xl bg-white dark:bg-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Crea Nuova Scheda
+              </h1>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCreateDialog(false)}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-xl font-bold h-10 w-10"
+              >
+                ✕
+              </Button>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <WorkoutBuilder 
+                onSuccess={() => setShowCreateDialog(false)}
+                isFullscreen={true}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Modal */}
       {editingWorkout && (

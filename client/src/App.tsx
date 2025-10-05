@@ -14,12 +14,14 @@ import Settings from "@/pages/settings";
 import ExerciseGlossary from "@/pages/exercise-glossary";
 import ResetPassword from "@/pages/reset-password";
 import NotFound from "@/pages/not-found";
+import About from "@/pages/about/index.tsx";
 import { AuthProvider } from "@/hooks/use-auth";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/about" component={About} />
       <Route path="/workouts" component={Workouts} />
       <Route path="/workout/:id" component={WorkoutDetail} />
       <Route path="/clients" component={Clients} />

@@ -3,7 +3,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
-import { Plus, Minus, GripVertical, Calendar, Dumbbell, BookOpen, ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { Plus, Minus, GripVertical, Calendar, Dumbbell, BookOpen, ChevronDown, ChevronRight, Eye, EyeOff, Copy } from 'lucide-react';
 import { Exercise, Day, Week, ExerciseGlossary } from '@shared/schema';
 import { ExerciseGlossarySelector } from './exercise-glossary-selector';
 import { useAuth } from '../hooks/use-auth';
@@ -223,6 +223,66 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
     onWeeksChange(updatedWeeks);
   };
 
+  const duplicateWeek = (weekId: string) => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
+    const weekToDuplicate = weeks.find(w => w.id === weekId);
+    if (!weekToDuplicate) return;
+
+    const duplicatedWeek: Week = {
+      ...weekToDuplicate,
+      id: generateId(),
+      name: `${weekToDuplicate.name} (Copia)`,
+      days: (weekToDuplicate.days || []).map(day => ({
+        ...day,
+        id: generateId(),
+        exercises: (day.exercises || []).map(ex => ({
+          ...ex,
+          id: generateId(),
+        })),
+      })),
+    };
+
+    const weekIndex = weeks.findIndex(w => w.id === weekId);
+    const updatedWeeks = [...weeks];
+    updatedWeeks.splice(weekIndex + 1, 0, duplicatedWeek);
+    onWeeksChange(updatedWeeks);
+  };
+
+  const duplicateDay = (weekId: string, dayId: string) => {
+    if (!user) {
+      requireAuth();
+      return;
+    }
+    const week = weeks.find(w => w.id === weekId);
+    if (!week) return;
+
+    const dayToDuplicate = week.days?.find(d => d.id === dayId);
+    if (!dayToDuplicate) return;
+
+    const duplicatedDay: Day = {
+      ...dayToDuplicate,
+      id: generateId(),
+      name: `${dayToDuplicate.name} (Copia)`,
+      exercises: (dayToDuplicate.exercises || []).map(ex => ({
+        ...ex,
+        id: generateId(),
+      })),
+    };
+
+    const updatedWeeks = weeks.map((week) =>
+      week.id === weekId
+        ? {
+            ...week,
+            days: [...(week.days || []), duplicatedDay],
+          }
+        : week
+    );
+    onWeeksChange(updatedWeeks);
+  };
+
   // Funzioni per la gestione degli esercizi
   const addExercise = (weekId: string, dayId: string) => {
     if (!user) {
@@ -337,6 +397,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
       requireAuth();
       return;
     }
+    
     const updatedWeeks = weeks.map((week) =>
       week.id === weekId
         ? {
@@ -512,7 +573,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
   return (
     <>
       <div className={`${showPreview ? 'flex gap-4 h-screen w-screen fixed top-0 left-0 z-40 bg-white dark:bg-gray-900' : 'w-full'}`}>
-        {/* PDF Preview Panel - Ora a sinistra */}
+        {/* PDF Preview Panel - A sinistra */}
         {showPreview && (
           <div className="w-1/2 border-r border-gray-200 dark:border-gray-700 pr-4 h-full overflow-hidden">
             <div className="h-full flex flex-col p-4">
@@ -564,7 +625,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
           </div>
         )}
 
-        {/* Editor Panel - Ora a destra */}
+        {/* Editor Panel - A destra */}
         <div className={`${showPreview ? 'w-1/2 h-full overflow-y-auto p-4' : 'w-full'} space-y-6 overflow-x-hidden`}>
           <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="weeks" type="week" isDropDisabled={isMobile}>
@@ -619,8 +680,18 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                             type="button"
                             variant="ghost"
                             size="sm"
+                            onClick={() => duplicateWeek(week.id)}
+                            className="ml-0 sm:ml-2 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/20"
+                            title="Duplica settimana"
+                          >
+                            <Copy size={16} />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
                             onClick={() => removeWeek(week.id)}
-                            className="ml-2 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/20"
+                            className="ml-0 sm:ml-2 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/20"
                           >
                             <Minus size={16} />
                           </Button>
@@ -696,6 +767,16 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                         className="ml-0 sm:ml-2"
                                       >
                                         {collapsedDays[day.id] ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                                      </Button>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => duplicateDay(week.id, day.id)}
+                                        className="ml-0 sm:ml-2 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/20"
+                                        title="Duplica giorno"
+                                      >
+                                        <Copy size={16} />
                                       </Button>
                                       <Button
                                         type="button"
@@ -787,7 +868,7 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                       </Button>
                                                       <Button
                                                         variant="ghost"
-                                                        size="sm"
+                                                        size="icon"
                                                         onClick={() =>
                                                           removeExercise(
                                                             week.id,
@@ -795,13 +876,13 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                             exercise.id
                                                           )
                                                         }
-                                                        className="ml-0 sm:ml-1 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/20"
+                                                        className="ml-0 sm:ml-1 h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-100 dark:hover:bg-red-900/20"
                                                       >
-                                                        <Minus size={16} />
+                                                        <Minus size={14} />
                                                       </Button>
                                                     </div>
 
-                                                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                                       <div>
                                                         <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
                                                           Serie
@@ -839,6 +920,25 @@ const DragDropExerciseEditor: React.FC<DragDropExerciseEditorProps> = ({
                                                           }
                                                           className="glass-effect bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm"
                                                           placeholder="10-12"
+                                                        />
+                                                      </div>
+                                                      <div>
+                                                        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">
+                                                          Carico
+                                                        </label>
+                                                        <Input
+                                                          value={exercise.load || ''}
+                                                          onChange={(e) =>
+                                                            updateExercise(
+                                                              week.id,
+                                                              day.id,
+                                                              exercise.id,
+                                                              'load',
+                                                              e.target.value
+                                                            )
+                                                          }
+                                                          className="glass-effect bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm"
+                                                          placeholder="kg/%"
                                                         />
                                                       </div>
                                                       <div>
